@@ -1,0 +1,32 @@
+# Local environments and tool caches
+.env
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.pre-commit-cache/
+.ruff_cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Dissection working output
+work/
+out/
+*.tar
+*.tar.gz
+rootfs/
+manifests/
+
+# Local security and qualification evidence
+*.sarif
+*.spdx.json
+grype*.json
+
+# Local container build output
+build/
+dist/
