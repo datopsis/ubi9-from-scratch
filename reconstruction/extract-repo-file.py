@@ -31,14 +31,24 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=Path("reconstruction/ubi.repo"))
     args = parser.parse_args()
 
-    if not args.layer.exists():
-        raise SystemExit(f"{args.layer} not found — run scripts/fetch_image.py first")
+    # fetch_image.py writes the compressed blob; inventory.py leaves the
+    # decompressed tar beside it. Accept either, so this runs standalone
+    # without depending on the inventory step having happened first.
+    source = args.layer
+    mode = "r:"
+    if not source.exists():
+        compressed = source.with_suffix(source.suffix + ".gz")
+        if not compressed.exists():
+            raise SystemExit(
+                f"neither {source} nor {compressed} found — run scripts/fetch_image.py first"
+            )
+        source, mode = compressed, "r:gz"
 
-    with tarfile.open(args.layer, "r:") as tar:
+    with tarfile.open(source, mode) as tar:
         members = {m.name.lstrip("./"): m for m in tar.getmembers()}
         member = members.get(SOURCE)
         if member is None:
-            raise SystemExit(f"{SOURCE} is not present in {args.layer}")
+            raise SystemExit(f"{SOURCE} is not present in {source}")
         data = tar.extractfile(member).read()
 
     if len(data) != EXPECTED_SIZE:

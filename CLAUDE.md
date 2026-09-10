@@ -71,6 +71,29 @@ observed.
 When a demo reports a size, state which size: compressed layer, uncompressed
 layer, or apparent file bytes. A number without its measure is not a result.
 
+## Explaining what is in an image
+
+Every image this repository builds ships an explanation of its contents, and
+every application it carries ships an explanation of what it does. A reader
+must be able to answer, for any component present, three questions: what is
+this, why is it here, and what breaks without it.
+
+For each component, record:
+
+- what it is, in one sentence, without assuming the reader knows the package;
+- why it is present — named deliberately, or pulled in to satisfy a dependency;
+- what needs it, distinguishing **runtime linkage** observed in ELF headers
+  from an **RPM dependency**, because a package can be installed without
+  anything ever loading it;
+- what it costs, in bytes actually shipped rather than bytes declared.
+
+Where runtime linkage and RPM dependency disagree, say so and mark the
+component a trim candidate. Do not remove it on that basis alone: static
+analysis cannot see `dlopen` targets, NSS modules, certificates or
+configuration, so a trim is confirmed by a runtime trace, never by a closure.
+
+`docs/COMPONENTS.md` is the worked example of this standard.
+
 ## Documentation conventions
 
 Findings carry their evidence: the image digest, the tool and version, the
