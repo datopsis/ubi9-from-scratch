@@ -156,6 +156,15 @@ Every `.mo` catalogue is absent while `locale.alias` remains, and
 `glibc-minimal-langpack`. No removal step is needed to reproduce it; the
 correct install-language setting is.
 
+**I5 — The original transaction was run by `microdnf`, not `dnf`.** F12
+recovered the arguments but not the program name. The official image carries
+`/var/log/hawkey.log` and none of `dnf.log`, `dnf.librepo.log` or
+`dnf.rpm.log`. microdnf writes the first and not the others, while dnf writes
+all four. Either microdnf ran, or dnf ran and a cleanup removed exactly its
+three logs while keeping hawkey.log — the simpler explanation is microdnf.
+Reproducer: `scripts/compare.py`, which reports the three logs as extra in a
+dnf-built reconstruction.
+
 **I4 — Zoneinfo removal is a separate deletion step.** Nothing in either
 recorded command line removes `/usr/share/zoneinfo`, and its files carry no
 `%doc` flag, so neither `--nodocs` nor the language filter explains their

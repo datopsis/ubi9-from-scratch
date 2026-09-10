@@ -45,6 +45,7 @@ ACCEPTED_PREFIXES = (
     ("/var/lib/rpm/", "F7/WP6: rpmdb bytes differ per transaction; size is comparable"),
     ("/var/lib/dnf/", "F7: dnf history records this build, not Red Hat's"),
     ("/var/log/hawkey.log", "build log of this transaction"),
+    ("/var/log/dnf", "I5: dnf writes logs microdnf does not; removed to match the official end state"),
     ("/usr/share/buildinfo/", "F11: Red Hat build metadata, deliberately not reproduced"),
     ("/root/buildinfo/", "F11: Red Hat build metadata, deliberately not reproduced"),
     ("/var/lib/rhsm/", "subscription state written by the transaction"),
@@ -76,7 +77,9 @@ def read_tar_inventory(path: Path) -> dict[str, dict[str, object]]:
 
 def accepted_reason(path: str) -> str | None:
     for prefix, reason in ACCEPTED_PREFIXES:
-        if path == prefix or path.startswith(prefix):
+        # Match the directory itself as well as its contents: a prefix of
+        # "/root/buildinfo/" must also cover the entry "/root/buildinfo".
+        if path == prefix.rstrip("/") or path.startswith(prefix):
             return reason
     return None
 

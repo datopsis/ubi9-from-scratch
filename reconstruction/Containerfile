@@ -59,6 +59,12 @@ RUN rm -rf "${ROOTFS}/usr/share/zoneinfo" \
 # content is downloaded from Red Hat.
 COPY ubi.repo "${ROOTFS}/etc/yum.repos.d/ubi.repo"
 
+# I5 — the official image carries /var/log/hawkey.log but none of dnf's own
+# logs. microdnf writes the former and not the latter, which is evidence that
+# microdnf rather than dnf ran the original transaction — something F12 could
+# not record, because the history stores arguments without a program name.
+# This build uses dnf, so it removes the three logs dnf adds.
+
 # F2 — the final image is assembled over scratch and contains no package
 # manager. Everything above happened in a container that is now discarded.
 FROM scratch
