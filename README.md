@@ -24,7 +24,7 @@ there, and what does a from-scratch reconstruction have to do to match it.
 | --- | ---: | ---: | ---: |
 | Official `ubi9-micro` | 23,591,424 | 877 | — |
 | WP6 reconstruction | 23,585,791 | 871 | −0.02% |
-| L0: static C++ on `scratch` | 939,069 | 1 | 4.0% |
+| L0.0 / L0.1 / L0.2 on `scratch` | 934,974 – 939,069 | 1 | 4.0% |
 
 All three verified in CI. The reconstruction has **zero open differences**
 against the official image — every difference is explained, and the only
@@ -32,8 +32,13 @@ content it lacks is the 3,346 bytes of Red Hat build metadata it deliberately
 does not copy. `docs/COMPONENTS.md` explains what every byte of the official
 image is for.
 
-Start with **[the journey](docs/JOURNEY.md)** for the narrative walkthrough, or
-**[findings](docs/FINDINGS.md)** for the evidence-backed results.
+**New here? Start with [the tutorial ladder](demos/README.md)** — three
+lessons that build, run and inspect a real container from an empty image.
+
+For the investigation itself: **[the journey](docs/JOURNEY.md)** is the
+narrative, **[findings](docs/FINDINGS.md)** are the evidence-backed results,
+and **[reference](docs/REFERENCE.md)** has every layer, label, package and byte
+in tables.
 
 ## What the dissection found so far
 
@@ -105,10 +110,11 @@ pinned in `docs/METHOD.md` as the commands land.
 
 | Path | Contents |
 | --- | --- |
+| `CHANGELOG.md` | What changed in each release. |
+| `demos/` | **The tutorial ladder — start here.** |
 | `docs/JOURNEY.md` | Narrative walkthrough: official image to rebuild. |
 | `docs/COMPONENTS.md` | Every package: what it is, why it's there, what it costs. |
 | `reconstruction/` | WP6: rebuilding ubi9-micro, with build and run instructions. |
-| `demos/` | The WP9 ladder — each rung adds one requirement and reports its cost. |
 | `docs/REFERENCE.md` | Every layer, label, package and byte, in tables. |
 | `docs/METHOD.md` | How the dissection is performed, command by command. |
 | `docs/FINDINGS.md` | What the dissection showed, with evidence. |
