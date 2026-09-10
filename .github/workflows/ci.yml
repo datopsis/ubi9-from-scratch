@@ -252,3 +252,68 @@ jobs:
             security-results/
           if-no-files-found: warn
           retention-days: 14
+
+  # Part 0 — the toolkit. Verifies the install commands the tutorials give and
+  # exercises every tool, so tools/ quotes observed output rather than docs.
+  toolkit:
+    name: Toolkit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: What ships on the runner already
+        run: |
+          for t in podman skopeo buildah umoci syft grype jq; do
+            if command -v "$t" >/dev/null 2>&1; then
+              echo "$t: $("$t" --version 2>&1 | head -1)"
+            else
+              echo "$t: absent"
+            fi
+          done
+
+      # Verifies the Ubuntu / WSL2 half of every tutorial's prerequisites.
+      - name: Install — Ubuntu / WSL2 (apt)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq podman skopeo buildah jq
+          echo "--- installed ---"
+          podman --version
+          skopeo --version
+          buildah --version
+          jq --version
+
+      - name: Install — umoci (no distribution package)
+        run: |
+          UMOCI_VERSION=v0.4.7
+          curl -sSfL -o /tmp/umoci "https://github.com/opencontainers/umoci/releases/download/${UMOCI_VERSION}/umoci.amd64"
+          sudo install -m0755 /tmp/umoci /usr/local/bin/umoci
+          umoci --version
+
+      - name: Install — syft and grype
+        run: |
+          curl -sSfL https://get.anchore.io/syft  | sudo sh -s -- -b /usr/local/bin
+          curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b /usr/local/bin
+          syft version | head -2
+          grype version | head -2
+
+      # Verifies the Red Hat half by running it inside a UBI 9 container, so the
+      # dnf commands the tutorials give are executed rather than assumed.
+      - name: Install — Red Hat / Fedora (dnf), verified inside ubi9
+        run: |
+          podman run --rm registry.access.redhat.com/ubi9/ubi:9.8 bash -c 'set -e; dnf install -y --nodocs --setopt install_weak_deps=false skopeo buildah jq >/dev/null 2>&1; echo "--- installed inside ubi9 ---"; skopeo --version; buildah --version; jq --version'
+
+      - name: Build an image for the tools to work on
+        run: |
+          podman build --squash-all --file demos/l0.2-sha256/Containerfile --tag l0.2-sha256:9.8 demos/l0.2-sha256
+
+      - name: Exercise every tool
+        run: |
+          chmod +x scripts/toolkit_demo.sh
+          scripts/toolkit_demo.sh l0.2-sha256:9.8 2>&1 | tee toolkit-output.txt
+
+      - name: Upload the transcript
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolkit-transcript
+          path: toolkit-output.txt
+          retention-days: 14
