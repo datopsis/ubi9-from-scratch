@@ -11,6 +11,9 @@
 #   syft   https://github.com/anchore/syft    — builds the SBOM
 #   grype  https://github.com/anchore/grype   — scans it for known CVEs
 #
+# The image is exported to an OCI archive first and the tools read that, so no
+# container-engine socket is needed and the same commands work anywhere.
+#
 # Install (Linux/macOS):
 #   curl -sSfL https://get.anchore.io/syft  | sh -s -- -b /usr/local/bin
 #   curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
@@ -38,6 +41,17 @@ OUTDIR="${2:-security-results}"
 SAFE_NAME=$(echo "$IMAGE" | tr '/:' '__')
 
 mkdir -p "$OUTDIR"
+
+# Scan an exported OCI archive rather than asking the tools to talk to a
+# container engine. syft's podman backend needs a socket that is often absent
+# (rootless setups, CI runners), and an archive is what a reader can hand to
+# any scanner, on any machine, without a daemon running.
+ARCHIVE=$(mktemp -d)/image.tar
+trap 'rm -rf "$(dirname "$ARCHIVE")"' EXIT
+echo "=== Exporting $IMAGE to an OCI archive ==="
+podman save --format oci-archive -o "$ARCHIVE" "$IMAGE"
+echo "archive: $(stat -c '%s bytes' "$ARCHIVE")"
+echo
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -69,8 +83,10 @@ print(len(doc.get('packages', [])))
 
 echo
 echo "=== Vulnerability scan ==="
-grype "podman:$IMAGE" -o table --file "$OUTDIR/${SAFE_NAME}.grype.txt" || true
-grype "podman:$IMAGE" -o json --file "$OUTDIR/${SAFE_NAME}.grype.json" >/dev/null 2>&1 || true
+# Scan the SBOM we just produced, so the scan and the SBOM describe exactly
+# the same set of components.
+grype "sbom:$OUTDIR/${SAFE_NAME}.spdx.json" -o table --file "$OUTDIR/${SAFE_NAME}.grype.txt" || true
+grype "sbom:$OUTDIR/${SAFE_NAME}.spdx.json" -o json --file "$OUTDIR/${SAFE_NAME}.grype.json" >/dev/null 2>&1 || true
 cat "$OUTDIR/${SAFE_NAME}.grype.txt"
 
 echo
