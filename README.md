@@ -1,12 +1,12 @@
 # UBI 9 Micro from scratch
 
-[![License](https://img.shields.io/github/license/datopsis/ubi9-micro-from-scratch)](LICENSE)
+[![License](https://img.shields.io/github/license/datopsis/ubi9-from-scratch)](LICENSE)
 [![Base: Red Hat UBI 9](https://img.shields.io/badge/base-Red%20Hat%20UBI%209-EE0000?logo=redhat&logoColor=white)](https://developers.redhat.com/products/rhel/ubi)
 [![Subject: ubi9-micro](https://img.shields.io/badge/subject-ubi9--micro-EE0000?logo=redhat&logoColor=white)](docs/METHOD.md)
 [![Status: investigation](https://img.shields.io/badge/status-investigation-F2994A)](docs/ROADMAP.md)
 [![Badge policy](https://img.shields.io/badge/badges-policy-2F80ED)](docs/BADGING.md)
 
-`ubi9-micro-from-scratch` takes Red Hat's official `ubi9-micro` image apart
+`ubi9-from-scratch` takes Red Hat's official `ubi9-micro` image apart
 and rebuilds an equivalent image from first principles. The goal is a
 documented, reproducible answer to a question the published Containerfile
 does not fully explain: what is actually inside UBI Micro, how did it get

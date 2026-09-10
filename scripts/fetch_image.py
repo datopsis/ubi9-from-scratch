@@ -38,7 +38,7 @@ MANIFEST_ACCEPT = ",".join(
 
 def _get(url: str, accept: str | None = None) -> tuple[bytes, dict[str, str]]:
     request = urllib.request.Request(url)
-    request.add_header("User-Agent", "ubi9-micro-from-scratch/wp1")
+    request.add_header("User-Agent", "ubi9-from-scratch/wp1")
     if accept:
         request.add_header("Accept", accept)
     with urllib.request.urlopen(request) as response:

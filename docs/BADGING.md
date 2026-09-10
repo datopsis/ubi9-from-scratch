@@ -29,7 +29,7 @@ The canonical badge markup lives at the top of `README.md`. When changing it:
 
 1. use HTTPS for both the image and destination;
 2. link workflow badges to the workflow page, not to a single run;
-3. keep repository coordinates explicit as `datopsis/ubi9-micro-from-scratch`;
+3. keep repository coordinates explicit as `datopsis/ubi9-from-scratch`;
 4. URL-encode static badge labels and values;
 5. preview links while signed out so badges do not depend on private
    credentials; and

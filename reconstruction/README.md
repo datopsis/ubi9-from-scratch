@@ -67,7 +67,7 @@ image changed and the study needs re-pinning.
 podman build \
   --squash-all \
   --file reconstruction/Containerfile \
-  --tag ubi9-micro-from-scratch:wp6 \
+  --tag ubi9-from-scratch:wp6 \
   reconstruction/
 ```
 
@@ -81,7 +81,7 @@ and re-import the filesystem.
 `UNVERIFIED`
 
 ```sh
-podman run --rm ubi9-micro-from-scratch:wp6 /bin/sh -c 'echo hello from the rebuild'
+podman run --rm ubi9-from-scratch:wp6 /bin/sh -c 'echo hello from the rebuild'
 ```
 
 Predicted output:
@@ -103,19 +103,19 @@ A build that runs is not a result. These checks are the actual deliverable.
 the dissection recorded (23,591,424 B for the official image).
 
 ```sh
-podman image inspect ubi9-micro-from-scratch:wp6 --format '{{.Size}}'
+podman image inspect ubi9-from-scratch:wp6 --format '{{.Size}}'
 ```
 
 **Layer count.** Must be 1.
 
 ```sh
-podman image inspect ubi9-micro-from-scratch:wp6 --format '{{len .RootFS.Layers}}'
+podman image inspect ubi9-from-scratch:wp6 --format '{{len .RootFS.Layers}}'
 ```
 
 **No package manager.** All four must be absent.
 
 ```sh
-podman run --rm ubi9-micro-from-scratch:wp6 /bin/sh -c \
+podman run --rm ubi9-from-scratch:wp6 /bin/sh -c \
   'for b in rpm dnf microdnf yum; do command -v $b && echo "FAIL: $b present"; done; echo checked'
 ```
 
@@ -152,7 +152,7 @@ recovered instructions, and WP7 will show whether they are right:
 ## Clean up
 
 ```sh
-podman rmi ubi9-micro-from-scratch:wp6
+podman rmi ubi9-from-scratch:wp6
 rm -f reconstruction/ubi.repo
 rm -rf work/
 ```
