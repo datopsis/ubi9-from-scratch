@@ -11,9 +11,59 @@ rather than predicted.
 
 ## [Unreleased]
 
-Next: **v0.2.0 — L1**, leaving `scratch` and linking dynamically against the
-reconstructed base, and measuring what that costs. See
-[docs/ROADMAP.md](docs/ROADMAP.md).
+Next: **v0.3.0 — Part 0, the toolkit.** Tutorials introducing podman, skopeo,
+buildah, umoci, syft and grype on their own terms, with WSL2 Ubuntu and RHEL
+setup instructions side by side. See [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## [0.2.0] — 2026-09-10
+
+Adds the anatomy lesson the series was missing, the first rung above the floor,
+and the method track that ties the whole series together.
+
+### Added
+
+- **L0.0 anatomy** — takes a container image apart by hand. The docker-archive
+  layout, the OCI layout, and content addressing verified rather than believed:
+  every blob is named by its own sha256, and the tutorial checks it. Its
+  payload is C rather than C++ so the archive holds exactly one file and the
+  visible cost is glibc rather than the program. 798,905 bytes.
+- **L1 dynamic** — the same SHA-256 program linked against the base image's
+  glibc instead of carrying a copy. **The binary gets 4.9× smaller (939,069 →
+  192,632 bytes) and the image gets 25× larger (939,069 → 23,788,574).**
+- `docs/METHODOLOGY.md` — the destination the tutorials build toward: a flow
+  diagram and checklist for assembling a container from scratch, what static
+  analysis cannot see, the functional and security differences between the two
+  ways people build containers, and an honest account of the disadvantages.
+- `docs/ROADMAP.md` expanded with a toolkit series (podman, skopeo, buildah,
+  umoci, syft, grype), replication of `ubi9-minimal` and `ubi9`, a method track,
+  and a shortlist of further tooling with the reason each earns a place.
+
+### Changed
+
+- The L0 rungs are renumbered to make room for the anatomy lesson: describe is
+  now L0.1, SHA-256 is L0.2, authority is L0.3.
+- Both L0 images declare `USER 1000:1000` rather than defaulting to uid 0.
+
+### Findings
+
+- **A `scratch` image is not empty at runtime.** Under full confinement three
+  probes still succeeded: the runtime injects `/etc/passwd` for a declared
+  `USER` and mounts a tmpfs on `/tmp`, so `--read-only` gives a process *more*
+  reachable filesystem, not less. An image and a container are different
+  things.
+- **`ubi9-micro` ships glibc but not libstdc++.** A plain dynamic C++ build
+  compiles and then fails at startup. `-static-libstdc++ -static-libgcc`
+  targets a minimal base without adding a package to it.
+- **Going dynamic did not introduce 23 vulnerabilities — it made them
+  visible.** The same glibc flaws were compiled into the static binary where no
+  scanner could report them.
+
+### Corrected
+
+- `podman unshare` and `podman mount` do the same job as their buildah
+  equivalents. An earlier claim implied buildah was uniquely capable of
+  mounting a container's filesystem; the difference is ergonomics, not
+  capability, and both terms are now explained rather than assumed.
 
 ## [0.1.0] — 2026-09-10
 
@@ -107,5 +157,6 @@ exactly, and opens the tutorial ladder with three lessons at its floor.
 - **Zero vulnerabilities is not a clean bill of health.** An image with no
   package database gives a package-based scanner nothing to read.
 
-[Unreleased]: https://github.com/datopsis/ubi9-from-scratch/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/datopsis/ubi9-from-scratch/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.2.0
 [0.1.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.1.0

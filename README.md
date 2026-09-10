@@ -24,7 +24,8 @@ there, and what does a from-scratch reconstruction have to do to match it.
 | --- | ---: | ---: | ---: |
 | Official `ubi9-micro` | 23,591,424 | 877 | — |
 | WP6 reconstruction | 23,585,791 | 871 | −0.02% |
-| L0.0 / L0.1 / L0.2 on `scratch` | 934,974 – 939,069 | 1 | 4.0% |
+| L0.0 – L0.3 on `scratch` | 798,905 – 939,069 | 1 | 3.4 – 4.0% |
+| L1: dynamic on `ubi9-micro` | 23,788,574 | 878 | 100.8% |
 
 All three verified in CI. The reconstruction has **zero open differences**
 against the official image — every difference is explained, and the only
@@ -115,6 +116,7 @@ pinned in `docs/METHOD.md` as the commands land.
 | `docs/JOURNEY.md` | Narrative walkthrough: official image to rebuild. |
 | `docs/COMPONENTS.md` | Every package: what it is, why it's there, what it costs. |
 | `reconstruction/` | WP6: rebuilding ubi9-micro, with build and run instructions. |
+| `docs/METHODOLOGY.md` | How to build a container from scratch: flow, checklist, trade-offs. |
 | `docs/REFERENCE.md` | Every layer, label, package and byte, in tables. |
 | `docs/METHOD.md` | How the dissection is performed, command by command. |
 | `docs/FINDINGS.md` | What the dissection showed, with evidence. |
