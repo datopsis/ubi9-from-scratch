@@ -136,6 +136,14 @@ jobs:
             ${{ matrix.expect_entries && format('--expect-entries {0}', matrix.expect_entries) || '' }} \
             --json verify-${{ matrix.variant }}.json
 
+      # WP7 — the actual comparison. Totals landing close is not evidence the
+      # contents match, so this diffs the inventories path by path.
+      - name: Compare against the official image
+        if: matrix.compare_to_official
+        run: |
+          python scripts/inventory.py
+          python scripts/compare.py rootfs.tar --json compare-${{ matrix.variant }}.json
+
       - name: Report size
         run: |
           size=$(podman image inspect ${{ matrix.variant }}:${{ matrix.releasever }} --format '{{.Size}}')
@@ -166,5 +174,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: verify-${{ matrix.variant }}-${{ matrix.releasever }}
-          path: verify-${{ matrix.variant }}.json
+          path: |
+            verify-${{ matrix.variant }}.json
+            compare-${{ matrix.variant }}.json
+          if-no-files-found: warn
           retention-days: 14
