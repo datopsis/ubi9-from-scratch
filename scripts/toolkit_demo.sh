@@ -48,8 +48,15 @@ if have skopeo; then
     skopeo inspect --format '{{.Digest}}' \
         docker://registry.access.redhat.com/ubi9/ubi-micro:latest 2>/dev/null
     echo
-    echo "\$ skopeo copy containers-storage:$IMAGE oci:$WORK/oci-layout:demo"
-    skopeo copy "containers-storage:$IMAGE" "oci:$WORK/oci-layout:demo" 2>&1 | tail -3
+    echo "Reading from containers-storage directly needs a user namespace:"
+    echo "\$ skopeo copy containers-storage:$IMAGE oci:...  # outside unshare"
+    skopeo copy "containers-storage:$IMAGE" "$WORK/nope:demo" 2>&1 | tail -1 | sed 's/^/  /'
+    echo
+    echo "Exporting to an archive first avoids that, and works anywhere:"
+    echo "\$ podman save --format oci-archive -o image.tar $IMAGE"
+    podman save --format oci-archive -o "$WORK/src.tar" "$IMAGE" >/dev/null 2>&1
+    echo "\$ skopeo copy oci-archive:image.tar oci:$WORK/oci-layout:demo"
+    skopeo copy "oci-archive:$WORK/src.tar" "oci:$WORK/oci-layout:demo" 2>&1 | tail -3
     find "$WORK/oci-layout" -type f 2>/dev/null | sed "s|$WORK/oci-layout|  .|" | sort
 else
     echo "skopeo not installed"
@@ -59,29 +66,36 @@ fi
 section "buildah — building an image with no Containerfile"
 
 if have buildah; then
-    echo "Assembling an image from nothing, step by step:"
-    echo
-    echo "\$ ctr=\$(buildah from scratch)"
+    echo "First, why 'unshare' is not optional. Outside a user namespace:"
+    echo "\$ ctr=\$(buildah from scratch); buildah mount \$ctr"
     ctr=$(buildah from scratch 2>/dev/null)
-    echo "  working container: $ctr"
-
-    echo "\$ mnt=\$(buildah mount \$ctr)"
-    mnt=$(buildah mount "$ctr" 2>/dev/null)
-    echo "  mounted at: $mnt"
-    echo "  (an ordinary directory — host tools work on it)"
-
-    echo "\$ install -D -m0755 /bin/true \$mnt/app"
-    install -D -m 0755 /bin/true "$mnt/app" 2>/dev/null && echo "  copied with the HOST's install(1)"
-    echo "  contents now:"
-    find "$mnt" -mindepth 1 2>/dev/null | sed "s|$mnt|  .|" | head -5
-
-    echo "\$ buildah config --cmd /app --label demo=true \$ctr"
-    buildah config --cmd /app --label demo=true "$ctr" 2>/dev/null && echo "  metadata set imperatively"
-
-    buildah umount "$ctr" >/dev/null 2>&1
-    echo "\$ buildah commit \$ctr buildah-demo:latest"
-    buildah commit --quiet "$ctr" buildah-demo:latest 2>&1 | tail -1
+    mnt_outside=$(buildah mount "$ctr" 2>&1)
+    if [ -z "$mnt_outside" ] || echo "$mnt_outside" | grep -qi "denied\|must\|error"; then
+        echo "  -> no path returned. Rootless mounting needs the user namespace."
+    else
+        echo "  -> $mnt_outside"
+    fi
     buildah rm "$ctr" >/dev/null 2>&1
+
+    echo
+    echo "Now the same thing inside one:"
+    echo "\$ buildah unshare bash -c '...'"
+    buildah unshare bash -c '
+        set -e
+        ctr=$(buildah from scratch)
+        echo "  working container: $ctr"
+        mnt=$(buildah mount "$ctr")
+        echo "  mounted at: $mnt"
+        echo "  (an ordinary directory — the HOST'"'"'s tools work on it)"
+        install -D -m 0755 /bin/true "$mnt/app"
+        echo "  copied /bin/true in with install(1); contents now:"
+        find "$mnt" -mindepth 1 | sed "s|$mnt|    .|"
+        buildah config --cmd /app --label demo=true "$ctr"
+        echo "  metadata set with buildah config, no Containerfile involved"
+        buildah umount "$ctr" >/dev/null
+        buildah commit --quiet "$ctr" buildah-demo:latest
+        buildah rm "$ctr" >/dev/null
+    ' 2>&1 | grep -v "^Getting\|^Copying\|^Writing\|^Storing" | head -20
 
     echo
     echo "The same operations exist in podman:"
