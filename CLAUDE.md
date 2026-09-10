@@ -94,6 +94,23 @@ configuration, so a trim is confirmed by a runtime trace, never by a closure.
 
 `docs/COMPONENTS.md` is the worked example of this standard.
 
+## The repository is the record
+
+Everything a reader needs is in this repository. Do not put findings, tables,
+results or explanations somewhere else and link to them — not in a hosted page,
+a chat transcript, an artifact, a wiki, or an issue comment. Those are
+ephemeral, they are not versioned with the code that produced them, and a
+reader who clones this repository in a year must not find a dead link where an
+explanation should be.
+
+External links are for other people's material — a specification, a vendor's
+documentation, an upstream source. They are never the canonical home of
+something this project produced.
+
+A generated view of repository content — a rendered page, a published summary
+— is a convenience and may exist, but only after the content itself is
+committed here, and the repository must never reference it as the source.
+
 ## Documentation conventions
 
 Findings carry their evidence: the image digest, the tool and version, the

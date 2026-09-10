@@ -9,7 +9,18 @@
 
 The floor of the WP9 ladder: a C++ application in an image that contains
 nothing but the application. No libc file, no shell, no `/etc`, no package
-manager, no directories — a single 931,144-byte binary at `/app`.
+manager, no directories — a single binary at `/app`.
+
+**It does real work: it computes the SHA-256 of standard input.** That function
+is deliberate. Every rung of the ladder computes the same digests by a
+different route — self-contained here, through OpenSSL at L2, through the FIPS
+provider at L3 — so the rungs produce identical output and their sizes are
+directly comparable. The cost of each requirement is then a difference in
+bytes, not a difference in what the program does.
+
+SHA-256 is implemented in the demo rather than linked, because L0's claim is
+that the image holds nothing but the binary. Linking a crypto library would
+make that claim untestable.
 
 It exists to establish the lower bound every other rung is measured against,
 and to make one point concretely: **when a program is statically linked, the
@@ -62,27 +73,67 @@ The build prints its own linkage check. `ldd` on a fully static binary reports
 
 ## Run
 
+Hash something:
+
 ```sh
-podman run --rm l0-static:9.8
+printf 'abc' | podman run --rm -i l0-static:9.8
 ```
 
 Observed output:
 
 ```
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+```
+
+That is the FIPS 180-4 test vector for `"abc"`, and it matches `sha256sum`.
+
+Ask it to describe its runtime instead:
+
+```sh
+podman run --rm l0-static:9.8 --report
+```
+
+```
 L0 — static C++ on scratch
 --------------------------
-linked in statically : libstdc++, libgcc unwinder, glibc
+function             : SHA-256 of stdin (self-contained)
+NIST self-test       : passed (3 vectors)
+sha256("abc")        : ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
 exceptions           : working
 shared libraries     : 0 — nothing loaded from the image
 
 This image contains one file: the binary you are reading this from.
 ```
 
-The program exits non-zero if its own claims fail — `1` if exception handling
-is broken, `2` if it finds shared libraries mapped. CI gates on that exit code,
-so a passing build means the claims held, not merely that the process started.
+The program runs the NIST vectors on every invocation and exits `1` if they
+fail, so it will not print a digest it cannot vouch for. `--report` also exits
+`2` if it finds shared libraries mapped.
 
 ## Verify
+
+**Function.** The demo owns its verification, which CI runs on every push:
+
+```sh
+demos/l0-static/verify.sh l0-static:9.8
+```
+
+Observed:
+
+```
+Functional test: SHA-256 of stdin
+  PASS  empty input                  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  PASS  "abc"                        ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+  PASS  448-bit message              248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1
+
+Functional test: multi-block input
+  PASS  100,000 bytes                6d1cf22d7cc09b085dfc25ee1a1f3ae0265804c607bc2074ad253bcc82fd81ee
+
+all functional checks passed
+```
+
+The 100,000-byte case is cross-checked against the host's `sha256sum`, so the
+digest is verified against an independent implementation rather than only
+against vectors compiled into the binary.
 
 **Contents.** Export the filesystem and inspect it. A shell-based check cannot
 be used here, because there is no shell.

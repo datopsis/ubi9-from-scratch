@@ -109,6 +109,7 @@ pinned in `docs/METHOD.md` as the commands land.
 | `docs/COMPONENTS.md` | Every package: what it is, why it's there, what it costs. |
 | `reconstruction/` | WP6: rebuilding ubi9-micro, with build and run instructions. |
 | `demos/` | The WP9 ladder — each rung adds one requirement and reports its cost. |
+| `docs/REFERENCE.md` | Every layer, label, package and byte, in tables. |
 | `docs/METHOD.md` | How the dissection is performed, command by command. |
 | `docs/FINDINGS.md` | What the dissection showed, with evidence. |
 | `docs/RECONSTRUCTION.md` | How the from-scratch build is assembled. |
