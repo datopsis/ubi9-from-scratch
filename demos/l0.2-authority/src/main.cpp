@@ -210,10 +210,16 @@ void report_capabilities() {
 
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
+    const bool hold = (argc > 1 && std::string(argv[1]) == "--hold");
+
     std::printf("L0.2 — what the kernel lets this process do\n");
     std::printf("-------------------------------------------\n");
-    std::printf("uid %d, gid %d\n\n", getuid(), getgid());
+    // The pid this process believes it has. Inside its own PID namespace it is
+    // 1; the host sees an ordinary process with an ordinary pid. Both are true
+    // at once, and comparing them is the clearest illustration of a namespace.
+    std::printf("uid %d, gid %d, pid %d (as this process sees it)\n\n",
+                getuid(), getgid(), getpid());
 
     report_capabilities();
     std::printf("\nProbes:\n");
@@ -239,6 +245,18 @@ int main() {
             "  --cap-drop=ALL --security-opt=no-new-privileges --read-only --network=none\n"
             "and compare. Nothing about the binary changes.\n",
             allowed);
+    }
+
+    if (hold) {
+        // Stay alive so the host can be inspected while this is running:
+        // ps on the host will show this process, with a different pid.
+        std::printf("
+Holding. Inspect from the host, then stop the container.
+");
+        std::fflush(stdout);
+        char discard[256];
+        while (std::fgets(discard, sizeof(discard), stdin) != nullptr) {
+        }
     }
 
     // Exit code carries the count so a caller can assert on confinement.
