@@ -1,0 +1,78 @@
+# Reconstruction of ubi9/ubi-micro from scratch.
+#
+# Every instruction below traces to a finding in docs/FINDINGS.md. Where the
+# original build did something this file cannot observe, the comment says so
+# rather than guessing silently.
+#
+# Subject being reproduced:
+#   sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6
+
+# The builder must carry a libdnf-based installer. F12 recovered the arguments
+# but not the program name, so either dnf or microdnf satisfies the record;
+# this file uses dnf and says so.
+#
+# WP7 requires this to be digest-pinned before any comparison is recorded. A
+# floating tag makes the result unreproducible, which is the same mistake WP1
+# exists to avoid.
+ARG BUILDER=registry.access.redhat.com/ubi9/ubi:9.8
+
+FROM ${BUILDER} AS rootfs
+ARG ROOTFS=/mnt/rootfs
+
+# F14 — two transactions, not one. The first installs redhat-release with GPG
+# checking disabled, because the key it would verify against does not exist
+# until that package puts it there.
+RUN dnf install -y \
+      --installroot "${ROOTFS}" \
+      redhat-release \
+      --releasever 9 \
+      --setopt install_weak_deps=false \
+      --nodocs \
+      --nogpgcheck
+
+# F14 — the second transaction reads its repository definitions from inside the
+# installroot, which the first transaction has now populated, and GPG checking
+# is back on.
+#
+# F13 — only these two packages are named. The other seventeen in the finished
+# image arrive as dependencies. Naming them here would freeze versions Red Hat
+# left to the resolver.
+RUN dnf install -y \
+      --installroot "${ROOTFS}" \
+      --setopt=reposdir=/etc/yum.repos.d/ \
+      coreutils-single glibc-minimal-langpack \
+      --releasever 9 \
+      --setopt install_weak_deps=false \
+      --nodocs
+
+# I4 — a post-install cleanup happened that no recorded command explains.
+# /usr/share/zoneinfo (1,505,172 B) and the /var/cache contents are absent from
+# the official image while being declared by installed packages and carrying no
+# %doc flag. This reproduces the observed end state; it is not a recovered
+# command, and U3 records that the cleanup's full extent is unknown.
+RUN rm -rf "${ROOTFS}/usr/share/zoneinfo" \
+    && rm -rf "${ROOTFS}"/var/cache/*
+
+# The official image ships /etc/yum.repos.d/ubi.repo, which no package owns
+# (it is copied in by the Containerfile, not installed). It is extracted from
+# the official image at build time rather than vendored here, so that Red Hat
+# content is downloaded from Red Hat.
+COPY ubi.repo "${ROOTFS}/etc/yum.repos.d/ubi.repo"
+
+# F2 — the final image is assembled over scratch and contains no package
+# manager. Everything above happened in a container that is now discarded.
+FROM scratch
+COPY --from=rootfs /mnt/rootfs /
+
+# Section 02 of the reference: the entire runtime contract.
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+WORKDIR /
+CMD ["/bin/sh"]
+
+# The 22 labels of the original are deliberately NOT reproduced verbatim.
+# build-date, vcs-ref and release name Red Hat's build system, and copying
+# maintainer/vendor onto a rebuild would misrepresent its origin.
+LABEL name="ubi9-micro-from-scratch" \
+      summary="Reconstruction of ubi9/ubi-micro for comparison" \
+      description="Not a Red Hat product. Built to compare against ubi9/ubi-micro." \
+      reconstructs="sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6"

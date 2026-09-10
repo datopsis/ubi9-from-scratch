@@ -94,7 +94,10 @@ def main() -> int:
 
     for trans_id, releasever, cmdline, state in transactions:
         print(f"=== transaction {trans_id} (releasever {releasever}, state {state}) ===")
-        print(f"  microdnf {cmdline}\n")
+        # The cmdline column stores arguments only. libdnf writes this history
+        # from both dnf and microdnf, so the program that ran is not recorded
+        # and must not be invented here.
+        print(f"  <dnf|microdnf> {cmdline}\n")
 
     named, pulled = [], []
     for trans_id, name, version, release, arch, action, reason, repo_id in items:

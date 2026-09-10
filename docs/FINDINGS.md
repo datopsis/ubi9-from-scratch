@@ -97,10 +97,17 @@ populated write-ahead log, which must be extracted alongside it or the record
 reads incomplete.
 
 ```
-microdnf install --installroot /mnt/rootfs redhat-release   --releasever 9 --setopt install_weak_deps=false --nodocs --nogpgcheck -y
+install --installroot /mnt/rootfs redhat-release --releasever 9 \
+  --setopt install_weak_deps=false --nodocs --nogpgcheck -y
 
-microdnf install --installroot /mnt/rootfs --setopt=reposdir=/etc/yum.repos.d/   coreutils-single glibc-minimal-langpack   --releasever 9 --setopt install_weak_deps=false --nodocs -y
+install --installroot /mnt/rootfs --setopt=reposdir=/etc/yum.repos.d/ \
+  coreutils-single glibc-minimal-langpack --releasever 9 \
+  --setopt install_weak_deps=false --nodocs -y
 ```
+
+The `cmdline` column records arguments only. libdnf writes this history from
+both `dnf` and `microdnf`, so **the program that ran is not recorded**. Either
+satisfies the arguments; a reconstruction picks one and states which.
 
 **F13 — Only three packages were named; seventeen are dependencies.** The
 transaction records an install reason per package. Named: `redhat-release`,
@@ -125,7 +132,7 @@ output combined with the `%doc` flag.
 ## Inferred
 
 **I1 — Superseded by F12, and now observed rather than inferred.** The root
-filesystem came from `microdnf install --installroot /mnt/rootfs`, recorded
+filesystem came from `install --installroot /mnt/rootfs`, recorded
 verbatim in the image. No inference is required.
 
 **I3 — Locale removal is the RPM install-language filter, not a deletion.**

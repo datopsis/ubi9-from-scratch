@@ -44,6 +44,33 @@ Working output — extracted root filesystems, layer tarballs, image manifests,
 and scan results — is regenerable and must not be committed. Commit the
 scripts that produce it and the analysis that interprets it.
 
+## Demonstrations
+
+Every demonstration in this repository ships complete build and run
+instructions. Complete means a reader with none of this context can go from a
+clean checkout to a running result without inferring a step. Each demo's
+`README.md` states, in this order:
+
+- what the demo shows, and what it deliberately does not;
+- prerequisites, with the versions the instructions were exercised against;
+- the exact build command, copy-pasteable, with no placeholder the reader must
+  silently resolve;
+- the exact run command;
+- the expected output, quoted, so a reader knows whether it worked;
+- how to verify the claim the demo makes — a size figure, a linkage check, a
+  crypto self-test — rather than trusting that it ran;
+- how to remove what the demo created.
+
+Mark every command that has not actually been executed. An instruction written
+from analysis but never run is labelled `UNVERIFIED` at the top of its README
+and in the block itself, and the label is removed in the same change that
+records the run and its real output. Do not document an untested command as
+working, and do not paste expected output that was written rather than
+observed.
+
+When a demo reports a size, state which size: compressed layer, uncompressed
+layer, or apparent file bytes. A number without its measure is not a result.
+
 ## Documentation conventions
 
 Findings carry their evidence: the image digest, the tool and version, the
