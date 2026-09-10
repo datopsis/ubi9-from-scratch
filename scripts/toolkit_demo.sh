@@ -117,13 +117,15 @@ if have umoci && [ -d "$WORK/oci-layout" ]; then
     umoci list --layout "$WORK/oci-layout" 2>&1 | sed 's/^/  /'
 
     echo
-    echo "\$ umoci stat --layout $WORK/oci-layout --image demo --json | head"
-    umoci stat --layout "$WORK/oci-layout" --image demo --json 2>/dev/null | head -c 400
+    echo
+    echo "Only 'list' takes --layout. Everything else takes --image <path>:<tag>:"
+    echo "\$ umoci stat --image $WORK/oci-layout:demo --json"
+    umoci stat --image "$WORK/oci-layout:demo" --json 2>&1 | head -c 400
     echo
 
     echo
-    echo "\$ umoci unpack --rootless --layout $WORK/oci-layout --image demo $WORK/bundle"
-    umoci unpack --rootless --layout "$WORK/oci-layout" --image demo "$WORK/bundle" 2>&1 | tail -2
+    echo "\$ umoci unpack --rootless --image $WORK/oci-layout:demo $WORK/bundle"
+    umoci unpack --rootless --image "$WORK/oci-layout:demo" "$WORK/bundle" 2>&1 | tail -2
     if [ -d "$WORK/bundle/rootfs" ]; then
         echo "  the unpacked root filesystem:"
         find "$WORK/bundle/rootfs" -mindepth 1 2>/dev/null | sed "s|$WORK/bundle/rootfs|  .|" | head -5
