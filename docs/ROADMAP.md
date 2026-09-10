@@ -68,12 +68,39 @@ This phase is explicitly allowed to fail. **If a competitive size cannot be
 reached, the deliverable is the explanation of why**, supported by the same
 standard of evidence as everything else here. A documented floor is a result.
 
-### WP9 — Application requirement profiling
+### WP9 — The C++ demonstrator
 
-Establish what an application actually needs at runtime rather than what its
-packages declare: the shared-library closure, the configuration and data files
-opened, the users and directories required, and the writable paths used. The
-method must distinguish a genuine runtime requirement from a convenience.
+A C++ application built in this repository, carried in an image containing only
+what it needs to run. It is the vehicle for every measurement in this phase, so
+it is built as a ladder rather than a single target: each rung adds one
+requirement and reports what that requirement costs in bytes.
+
+| Rung | Adds | Linkage | What it demonstrates |
+| --- | --- | --- | --- |
+| L0 | a static C++ binary, nothing else | fully static | the floor: an image with no libc at all |
+| L1 | dynamic linkage against the base | glibc, libstdc++ | what leaving `scratch` costs |
+| L2 | TLS via OpenSSL | + openssl-libs | what transport security costs |
+| L3 | FIPS-mode crypto | + FIPS provider module | see WP10 |
+| L4 | structured logging | see WP11 | what observability costs |
+
+The ladder exists because the rungs are in tension. A fully static binary needs
+no base image, but **FIPS cannot be satisfied by a fully static build** — the
+validated boundary is a shared provider module that OpenSSL loads at runtime.
+Requiring FIPS therefore forces dynamic linkage and reinstates the glibc floor.
+Reporting one number for "the minimal image" would conceal that; reporting the
+ladder makes the cost of each requirement explicit and lets a reader choose the
+rung their workload actually needs.
+
+Static linkage against glibc carries its own limits — `getaddrinfo`, NSS and
+anything reached through `dlopen` do not work reliably in a fully static
+build. L0 and L1 must state which of these the demonstrator exercises rather
+than implying a static build is universally viable.
+
+Profiling method, applied at every rung: establish what the application needs
+at runtime rather than what its packages declare — the shared-library closure,
+the configuration and data files opened, the users and directories required,
+and the writable paths used. The method must distinguish a genuine runtime
+requirement from a convenience.
 
 ### WP10 — OpenSSL and FIPS
 
@@ -92,11 +119,19 @@ Establish what logging costs a minimal image — what a container must contain t
 emit logs usefully to stdout/stderr and to a collector, and what can be left to
 the runtime and orchestrator.
 
-### WP12 — Build and demonstrate
+### WP12 — Build, demonstrate and trim
 
-Build the tailored image and demonstrate the application functioning in it,
-including under the FIPS and logging requirements above. Demonstration means a
-runnable example in this repository, not an assertion.
+Build the image at each rung of the WP9 ladder and demonstrate the application
+functioning in it. Demonstration means a runnable example in this repository,
+not an assertion.
+
+Trim each rung to what WP9 profiling proved necessary, and record what was
+removed and how the removal was verified not to break the application. A trim
+that is not demonstrated to be safe is not a result.
+
+Further use cases and code examples extend the ladder. Each new one states the
+requirement it adds, its measured cost in bytes, and what it removes from the
+set of workloads the rung below can serve.
 
 ### WP13 — Comparison against other vendors
 
@@ -104,5 +139,11 @@ Compare size honestly against equivalent Alpine and distroless images. The
 comparison must state what each image contains, not only what each weighs, and
 must account for differences that are structural rather than incidental — glibc
 against musl foremost among them.
+
+Compare at equal capability, not equal name. An Alpine image without a
+validated crypto module is not a smaller version of a FIPS-capable image; it is
+a different image that cannot serve the same workload. Where a comparison has
+no equivalent on the other side, say so rather than reporting the size gap
+alone.
 
 Where a size gap cannot be closed, explain the cause and quantify it.
