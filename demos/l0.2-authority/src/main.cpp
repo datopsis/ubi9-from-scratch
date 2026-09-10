@@ -250,9 +250,7 @@ int main(int argc, char** argv) {
     if (hold) {
         // Stay alive so the host can be inspected while this is running:
         // ps on the host will show this process, with a different pid.
-        std::printf("
-Holding. Inspect from the host, then stop the container.
-");
+        std::printf("\nHolding. Inspect from the host, then stop the container.\n");
         std::fflush(stdout);
         char discard[256];
         while (std::fgets(discard, sizeof(discard), stdin) != nullptr) {
