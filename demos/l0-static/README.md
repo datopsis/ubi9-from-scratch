@@ -1,9 +1,11 @@
 # L0 — static C++ on scratch
 
 > [!NOTE]
-> **Verified** in CI on `ubuntu-latest` with Podman 5.x. Run 34439485922.
+> **Verified** in CI on `ubuntu-latest` with Podman 5.x. Run 34466896707.
 >
-> **Result: 934,974 bytes. One file. 4.0% of the official `ubi9-micro`.**
+> **Result: 939,069 bytes. One file. 4.0% of the official `ubi9-micro`.**
+> SHA-256 correctness checked against the NIST vectors and, on a 100,000-byte
+> input, against an independent `sha256sum`.
 
 ## What this shows
 
@@ -150,7 +152,7 @@ Observed:
 ```
 entries        : 1
   files        : 1
-apparent bytes : 931,144
+apparent bytes : 935,288
 setuid         : 0
 setgid         : 0
 non-root owned : 0
@@ -165,7 +167,10 @@ all checks passed
 podman image inspect l0-static:9.8 --format '{{.Size}}'
 ```
 
-Observed: `934974`.
+Observed: `939069`.
+
+The self-contained SHA-256 implementation accounts for 4,095 of those bytes:
+the rung measured 934,974 before it was given real work.
 
 **Static linkage**, independently of what the program claims about itself:
 
@@ -181,12 +186,12 @@ A static binary has no `PT_INTERP` segment. `scripts/closure.py` reports
 
 | Rung | Image bytes | Entries | vs `ubi9-micro` |
 | --- | ---: | ---: | ---: |
-| **L0 static** | **934,974** | **1** | **4.0%** |
+| **L0 static** | **939,069** | **1** | **4.0%** |
+| WP6 reconstruction | 23,585,791 | 871 | 99.98% |
 | Official `ubi9-micro` | 23,591,424 | 877 | 100% |
-| WP6 reconstruction | 23,613,441 | 874 | 100.1% |
 
 L1 through L4 are not built yet. Each will appear here with its own measured
-cost as it lands.
+cost as it lands, computing the same digests so the comparison stays honest.
 
 ## Clean up
 

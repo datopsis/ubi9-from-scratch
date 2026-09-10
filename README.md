@@ -23,8 +23,8 @@ there, and what does a from-scratch reconstruction have to do to match it.
 | Image | Bytes | Entries | vs official |
 | --- | ---: | ---: | ---: |
 | Official `ubi9-micro` | 23,591,424 | 877 | — |
-| WP6 reconstruction | 23,585,792 | 871 | −0.02% |
-| L0: static C++ on `scratch` | 934,974 | 1 | 4.0% |
+| WP6 reconstruction | 23,585,791 | 871 | −0.02% |
+| L0: static C++ on `scratch` | 939,069 | 1 | 4.0% |
 
 All three verified in CI. The reconstruction has **zero open differences**
 against the official image — every difference is explained, and the only
