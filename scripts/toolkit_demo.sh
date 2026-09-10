@@ -144,13 +144,10 @@ if have syft; then
     echo "\$ syft oci-archive:image.tar -o table"
     syft "oci-archive:$WORK/img.tar" -o table 2>/dev/null | head -12
     echo
-    echo "The same command against the reconstructed ubi9-micro, for contrast:"
-    if podman image exists micro:9.8 2>/dev/null; then
-        podman save --format oci-archive -o "$WORK/micro.tar" micro:9.8 >/dev/null 2>&1
-        syft "oci-archive:$WORK/micro.tar" -o table 2>/dev/null | head -12
-    else
-        echo "  (micro:9.8 not built in this job)"
-    fi
+    echo "The same command against the official ubi9-micro, for contrast:"
+    podman pull -q registry.access.redhat.com/ubi9/ubi-micro:latest >/dev/null 2>&1
+    podman save --format oci-archive -o "$WORK/micro.tar"         registry.access.redhat.com/ubi9/ubi-micro:latest >/dev/null 2>&1
+    syft "oci-archive:$WORK/micro.tar" -o table 2>/dev/null | head -14
 else
     echo "syft not installed"
 fi
@@ -163,8 +160,8 @@ if have grype && [ -f "$WORK/img.tar" ]; then
     grype "oci-archive:$WORK/img.tar" 2>/dev/null | head -8
     if [ -f "$WORK/micro.tar" ]; then
         echo
-        echo "And against the reconstruction:"
-        grype "oci-archive:$WORK/micro.tar" 2>/dev/null | head -12
+        echo "And against the official ubi9-micro:"
+        grype "oci-archive:$WORK/micro.tar" 2>/dev/null | head -14
     fi
 else
     echo "grype not installed, or no archive to scan"
