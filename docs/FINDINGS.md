@@ -140,6 +140,14 @@ including `glibc-2.34-275.el9_8` and `tzdata-2026c-1.el9_8`, despite drawing
 from `cdn-ubi.redhat.com` rather than the internal content set named in
 F10. This was previously an assumption and is now observed.
 
+**F18 — The reconstruction reproduces the official inventory with zero open
+differences.** 23,585,792 B against 23,591,424 B, and 22,995,478 apparent file
+bytes against 22,998,824. All six differences are accepted and explained; the
+only content absent is the 3,346 B of Red Hat build metadata the
+reconstruction declines to copy. No mode, ownership or size differences on any
+shared path. Reproducer: `scripts/compare.py`, CI run 34439810973. Detail in
+`docs/COMPARISON.md`.
+
 ## Inferred
 
 **I1 — Superseded by F12, and now observed rather than inferred.** The root

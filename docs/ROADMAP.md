@@ -49,10 +49,15 @@ The remaining unknown is the post-install cleanup in I4, which was reproduced
 from what is absent rather than from a recorded command. WP7 locates any
 residue by diffing inventories rather than totals.
 
-### WP7 — Comparison
+### WP7 — Comparison — done
 
-Diff reconstruction against official across every dimension WP2–WP5 recorded,
-and disposition each difference as resolved, accepted or open.
+Zero open differences. 23,585,792 B against the official 23,591,424 B, with
+the only absent content being 3,346 B of Red Hat build metadata deliberately
+not reproduced. See `docs/COMPARISON.md`.
+
+Closing the last differences produced a finding: the official image carries
+hawkey.log but none of dnf's three logs, which identifies microdnf as the
+program that ran the original transaction (I5).
 
 ### WP8 — Write-up
 

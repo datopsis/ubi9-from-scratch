@@ -13,20 +13,24 @@ does not fully explain: what is actually inside UBI Micro, how did it get
 there, and what does a from-scratch reconstruction have to do to match it.
 
 > [!IMPORTANT]
-> Phase 1 is complete and verified in CI. The reconstruction builds to within
-> 22,017 bytes (0.09%) of the official image. Phase 2 — an application-tailored
-> image — is under way; its first rung is built and measured.
+> Phase 1 is complete and verified in CI: the reconstruction reproduces the
+> official image with zero unexplained differences. Phase 2 — an
+> application-tailored image — is under way; its first rung is built and
+> measured.
 
 ## Results so far
 
 | Image | Bytes | Entries | vs official |
 | --- | ---: | ---: | ---: |
 | Official `ubi9-micro` | 23,591,424 | 877 | — |
-| WP6 reconstruction | 23,613,441 | 874 | +0.09% |
+| WP6 reconstruction | 23,585,792 | 871 | −0.02% |
 | L0: static C++ on `scratch` | 934,974 | 1 | 4.0% |
 
-All three verified in CI. `docs/COMPONENTS.md` explains what every byte of the
-official image is for.
+All three verified in CI. The reconstruction has **zero open differences**
+against the official image — every difference is explained, and the only
+content it lacks is the 3,346 bytes of Red Hat build metadata it deliberately
+does not copy. `docs/COMPONENTS.md` explains what every byte of the official
+image is for.
 
 Start with **[the journey](docs/JOURNEY.md)** for the narrative walkthrough, or
 **[findings](docs/FINDINGS.md)** for the evidence-backed results.

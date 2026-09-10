@@ -5,8 +5,8 @@
 > `ubuntu-latest` with Podman 5.x. The outputs below are observed, not
 > predicted. Run 34439224680 is the record.
 >
-> **Result: 23,613,441 bytes against the official 23,591,424 — a delta of
-> 22,017 bytes, 0.09%.**
+> **Result: 23,585,792 bytes against the official 23,591,424, and zero open
+> differences in the file-by-file comparison.**
 
 ## What this shows
 
@@ -124,11 +124,14 @@ difference.
 
 ## Result
 
-| Measure | Bytes |
-| --- | ---: |
-| This reconstruction | 23,613,441 |
-| Official `ubi9-micro` | 23,591,424 |
-| **Delta** | **+22,017 (0.09%)** |
+| Measure | Official | Reconstruction | Delta |
+| --- | ---: | ---: | ---: |
+| Image size | 23,591,424 | 23,585,792 | −5,632 |
+| Apparent file bytes | 22,998,824 | 22,995,478 | −3,346 |
+| **Open differences** | — | — | **0** |
+
+The −3,346 B is exactly the Red Hat build metadata this rebuild declines to
+copy. Full dispositions in [`docs/COMPARISON.md`](../docs/COMPARISON.md).
 
 Verified in the same run: exactly one layer; no `rpm`, `dnf`, `microdnf` or
 `yum`; no setuid or setgid entries anywhere in the filesystem.
