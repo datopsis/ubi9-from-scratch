@@ -79,7 +79,7 @@ requirement and reports what that requirement costs in bytes.
 
 | Rung | Adds | Linkage | What it demonstrates |
 | --- | --- | --- | --- |
-| L0 | a static C++ binary, nothing else | fully static | the floor: an image with no libc at all |
+| L0 | a static C++ binary, nothing else | fully static | **done — 934,974 B, 1 file, 4.0% of ubi9-micro** |
 | L1 | dynamic linkage against the base | glibc, libstdc++ | what leaving `scratch` costs |
 | L2 | TLS via OpenSSL | + openssl-libs | what transport security costs |
 | L3 | FIPS-mode crypto | + FIPS provider module | see WP10 |

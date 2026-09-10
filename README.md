@@ -13,9 +13,20 @@ does not fully explain: what is actually inside UBI Micro, how did it get
 there, and what does a from-scratch reconstruction have to do to match it.
 
 > [!IMPORTANT]
-> This repository is at the investigation stage. The dissection through package
-> attribution is complete and reproducible; no reconstruction has been built
-> yet, and no claim of equivalence with the official image has been tested.
+> Phase 1 is complete and verified in CI. The reconstruction builds to within
+> 22,017 bytes (0.09%) of the official image. Phase 2 — an application-tailored
+> image — is under way; its first rung is built and measured.
+
+## Results so far
+
+| Image | Bytes | Entries | vs official |
+| --- | ---: | ---: | ---: |
+| Official `ubi9-micro` | 23,591,424 | 877 | — |
+| WP6 reconstruction | 23,613,441 | 874 | +0.09% |
+| L0: static C++ on `scratch` | 934,974 | 1 | 4.0% |
+
+All three verified in CI. `docs/COMPONENTS.md` explains what every byte of the
+official image is for.
 
 Start with **[the journey](docs/JOURNEY.md)** for the narrative walkthrough, or
 **[findings](docs/FINDINGS.md)** for the evidence-backed results.
@@ -92,6 +103,8 @@ pinned in `docs/METHOD.md` as the commands land.
 | --- | --- |
 | `docs/JOURNEY.md` | Narrative walkthrough: official image to rebuild. |
 | `docs/COMPONENTS.md` | Every package: what it is, why it's there, what it costs. |
+| `reconstruction/` | WP6: rebuilding ubi9-micro, with build and run instructions. |
+| `demos/` | The WP9 ladder — each rung adds one requirement and reports its cost. |
 | `docs/METHOD.md` | How the dissection is performed, command by command. |
 | `docs/FINDINGS.md` | What the dissection showed, with evidence. |
 | `docs/RECONSTRUCTION.md` | How the from-scratch build is assembled. |
