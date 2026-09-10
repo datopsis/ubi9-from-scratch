@@ -70,15 +70,19 @@ echo
 echo "=== SBOM: $IMAGE ==="
 # SPDX is the format most compliance processes ask for; CycloneDX is what many
 # scanners consume. Producing both costs one extra second.
-syft "oci-archive:$ARCHIVE" -o spdx-json="$OUTDIR/${SAFE_NAME}.spdx.json" \
+syft "oci-archive:$ARCHIVE" -o json="$OUTDIR/${SAFE_NAME}.syft.json" \
+     -o spdx-json="$OUTDIR/${SAFE_NAME}.spdx.json" \
                      -o cyclonedx-json="$OUTDIR/${SAFE_NAME}.cdx.json" \
                      -o table
 
+# Count real components from syft's own catalogue. The SPDX document also
+# carries a root entry describing the image itself, which is not a component;
+# counting SPDX packages reports 1 for an image that contains none.
 packages=$(python3 -c "
-import json,sys
-with open('$OUTDIR/${SAFE_NAME}.spdx.json') as fh:
+import json
+with open('$OUTDIR/${SAFE_NAME}.syft.json') as fh:
     doc = json.load(fh)
-print(len(doc.get('packages', [])))
+print(len(doc.get('artifacts', [])))
 " 2>/dev/null || echo "?")
 
 echo
@@ -91,7 +95,23 @@ cat "$OUTDIR/${SAFE_NAME}.grype.txt"
 
 echo
 echo "=== Interpretation ==="
-echo "packages catalogued: $packages"
+echo "components catalogued: $packages"
+
+# Severity breakdown, so a tutorial can quote numbers rather than a verdict.
+if [ -s "$OUTDIR/${SAFE_NAME}.grype.json" ]; then
+    python3 -c "
+import json, collections
+with open('$OUTDIR/${SAFE_NAME}.grype.json') as fh:
+    doc = json.load(fh)
+counts = collections.Counter(
+    m['vulnerability'].get('severity', 'Unknown') for m in doc.get('matches', [])
+)
+print(f'vulnerabilities found : {sum(counts.values())}')
+for severity in ('Critical', 'High', 'Medium', 'Low', 'Negligible', 'Unknown'):
+    if counts.get(severity):
+        print(f'  {severity:<12} {counts[severity]}')
+" 2>/dev/null || true
+fi
 if [ "$packages" = "0" ]; then
     cat <<'NOTE'
 
