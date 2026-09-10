@@ -259,7 +259,10 @@ int main(int argc, char** argv) {
     if (!exceptions_ok) {
         return 1;
     }
-    if (proc_available && mapped != 0) {
+    // The opposite assertion to L0. This rung is dynamically linked, so shared
+    // libraries loaded from the image are the expected outcome; finding none
+    // would mean the binary is not doing what this rung claims.
+    if (proc_available && mapped == 0) {
         return 2;
     }
     return 0;
