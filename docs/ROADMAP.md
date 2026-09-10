@@ -41,8 +41,11 @@ Accounts, release files, licences, content manifests, repository definitions.
 Build the image from an `--installroot` package transaction over `scratch`,
 reproducing the trims recorded in WP4. Needs a Linux container runtime.
 
-Blocked on U1: which packages were named explicitly and which the resolver
-pulled in. Naming all twenty would freeze versions Red Hat left to resolution.
+Unblocked. F12 recovered both build command lines verbatim and F13 identified
+the three named packages, so the transaction to reproduce is known exactly
+rather than reconstructed. The remaining unknown is the post-install cleanup
+in I4, which must be reproduced by inspection of what is absent rather than
+from a recorded command.
 
 ### WP7 — Comparison
 

@@ -90,14 +90,58 @@ reconstruction outside Red Hat necessarily draws from the public repository.
 `labels.json` (1,084 B) appear at both `/root/buildinfo/` and
 `/usr/share/buildinfo/`, from the same source directory hash in the history.
 
+**F12 — The build commands are recorded in the image.** `/var/lib/dnf/history.sqlite`
+carries the `cmdline` of both transactions that built the root filesystem.
+Reproducer: `python scripts/transaction.py`. The database ships with a
+populated write-ahead log, which must be extracted alongside it or the record
+reads incomplete.
+
+```
+microdnf install --installroot /mnt/rootfs redhat-release   --releasever 9 --setopt install_weak_deps=false --nodocs --nogpgcheck -y
+
+microdnf install --installroot /mnt/rootfs --setopt=reposdir=/etc/yum.repos.d/   coreutils-single glibc-minimal-langpack   --releasever 9 --setopt install_weak_deps=false --nodocs -y
+```
+
+**F13 — Only three packages were named; seventeen are dependencies.** The
+transaction records an install reason per package. Named: `redhat-release`,
+`coreutils-single`, `glibc-minimal-langpack`. The other seventeen, including
+`bash` and `tzdata`, were pulled in by the resolver.
+
+**F14 — Two transactions, and the first skips GPG checking.** Transaction 1
+installs `redhat-release` with `--nogpgcheck`, because the key it would verify
+against is not present until that package installs it. Transaction 2 then
+enables checking and points at the repositories now inside the installroot via
+`--setopt=reposdir=`. A reconstruction that runs a single transaction cannot
+reproduce this bootstrap.
+
+**F15 — `--nodocs` explains only a quarter of what was removed.** Of the
+8,498,676 bytes trimmed, files flagged `%doc` account for 2,223,129 B across 91
+files. The remaining 6,275,547 B across 3,278 files are not doc-flagged:
+`/usr/share/locale` (4,770,375 B, 1,405 files — every `.mo` message catalogue,
+leaving only `locale.alias`) and `/usr/share/zoneinfo` (1,505,172 B, 1,864
+files, removed entirely). Reproducer: the breakdown in `scripts/attribute.py`
+output combined with the `%doc` flag.
+
 ## Inferred
 
-**I1 — The root filesystem came from an `--installroot` transaction.** F2
-shows no `RUN` in the Containerfile, F7 shows a populated rpmdb and dnf
-history, and F9 shows install-time flags. Together these indicate a package
-transaction performed in a separate build container against an installroot,
-whose output directory was then copied in. This is consistent with Red Hat's
-documented `ubi-micro` build approach but is not directly observable here.
+**I1 — Superseded by F12, and now observed rather than inferred.** The root
+filesystem came from `microdnf install --installroot /mnt/rootfs`, recorded
+verbatim in the image. No inference is required.
+
+**I3 — Locale removal is the RPM install-language filter, not a deletion.**
+Every `.mo` catalogue is absent while `locale.alias` remains, and
+`/usr/lib/locale` holds only `C.utf8` — the signature of RPM's
+`%_install_langs` restriction combined with the explicitly named
+`glibc-minimal-langpack`. No removal step is needed to reproduce it; the
+correct install-language setting is.
+
+**I4 — Zoneinfo removal is a separate deletion step.** Nothing in either
+recorded command line removes `/usr/share/zoneinfo`, and its files carry no
+`%doc` flag, so neither `--nodocs` nor the language filter explains their
+absence. `/var/cache/bpf` and `/var/cache/ldconfig` are likewise declared and
+absent while `/var/cache` itself remains empty. This points to a post-install
+cleanup in Red Hat's build script, which is not visible in the image. The
+cleanup's exact contents are not established — only that one occurred.
 
 **I2 — Declared and measured sizes agree only by coincidence.** The rpmdb
 reports 23,046,779 B unpacked against 22,998,982 B measured, a 47,797 B gap.
@@ -108,12 +152,12 @@ table is needed before any per-package size claim is made.
 
 ## Unexplained
 
-**U1 — The minimal explicit install set is not yet known.** Twenty packages
-are installed, but which were named on the command line and which arrived as
-dependencies has not been determined. Resolving this needs the `Requirename`
-and `Providename` tables, and it matters: naming all twenty in a
-reconstruction would pin versions that Red Hat allowed the resolver to
-choose.
+**U1 — Closed by F13.** Answered from the recorded transaction rather than
+inferred from dependency tables.
+
+**U3 — The exact post-install cleanup is unknown.** I4 establishes that one
+happened and identifies two of its targets. Whether it removed anything else
+that left no trace cannot be determined from the image.
 
 **U2 — Eighty distinct mtimes.** Most entries carry build-time stamps
 (2026-08-26T21:14:01–04Z) but some retain original RPM mtimes as old as
