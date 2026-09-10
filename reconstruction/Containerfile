@@ -50,20 +50,23 @@ RUN dnf install -y \
 # the official image while being declared by installed packages and carrying no
 # %doc flag. This reproduces the observed end state; it is not a recovered
 # command, and U3 records that the cleanup's full extent is unknown.
+#
+# I5 — the official image carries /var/log/hawkey.log but none of dnf's own
+# three logs. microdnf writes the first and not the others, which is evidence
+# that microdnf ran the original transaction; F12 could not record the program
+# name. This build uses dnf, so it removes the logs dnf adds and hawkey.log is
+# left in place, matching the official end state either way.
 RUN rm -rf "${ROOTFS}/usr/share/zoneinfo" \
-    && rm -rf "${ROOTFS}"/var/cache/*
+    && rm -rf "${ROOTFS}"/var/cache/* \
+    && rm -f "${ROOTFS}/var/log/dnf.log" \
+             "${ROOTFS}/var/log/dnf.librepo.log" \
+             "${ROOTFS}/var/log/dnf.rpm.log"
 
 # The official image ships /etc/yum.repos.d/ubi.repo, which no package owns
 # (it is copied in by the Containerfile, not installed). It is extracted from
 # the official image at build time rather than vendored here, so that Red Hat
 # content is downloaded from Red Hat.
 COPY ubi.repo "${ROOTFS}/etc/yum.repos.d/ubi.repo"
-
-# I5 — the official image carries /var/log/hawkey.log but none of dnf's own
-# logs. microdnf writes the former and not the latter, which is evidence that
-# microdnf rather than dnf ran the original transaction — something F12 could
-# not record, because the history stores arguments without a program name.
-# This build uses dnf, so it removes the three logs dnf adds.
 
 # F2 — the final image is assembled over scratch and contains no package
 # manager. Everything above happened in a container that is now discarded.
