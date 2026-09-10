@@ -93,6 +93,19 @@ jobs:
             needs_official_layer: false
             smoke: '--report'
             expect_entries: 1
+
+          # L0.2 — the floor, part three: why a container at all.
+          - variant: l0.2-authority
+            releasever: '9.8'
+            containerfile: demos/l0.2-authority/Containerfile
+            context: demos/l0.2-authority
+            needs_official_layer: false
+            # The smoke test runs unconfined on purpose: the probes are meant
+            # to succeed here, and verify.sh then shows them failing when the
+            # restrictions are applied.
+            smoke: ''
+            allow_nonzero_smoke: true
+            expect_entries: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -130,7 +143,12 @@ jobs:
 
       - name: Smoke test
         run: |
-          podman run --rm ${{ matrix.variant }}:${{ matrix.releasever }} ${{ matrix.smoke }}
+          if [ "${{ matrix.allow_nonzero_smoke }}" = "true" ]; then
+            # Exit status carries a measurement, not a pass/fail verdict.
+            podman run --rm ${{ matrix.variant }}:${{ matrix.releasever }} ${{ matrix.smoke }} || true
+          else
+            podman run --rm ${{ matrix.variant }}:${{ matrix.releasever }} ${{ matrix.smoke }}
+          fi
 
       # Functional verification. Each demo owns its verify.sh, so proving a
       # container does its job scales with the ladder instead of accumulating

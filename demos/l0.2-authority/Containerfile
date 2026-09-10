@@ -1,4 +1,4 @@
-# L0.0 — the floor of the ladder, part one: describe the environment.
+# L0.2 — the floor of the ladder, part three: why a container at all.
 #
 # A statically linked C++ binary in an image that contains nothing else. No
 # libc, no shell, no package manager, no /etc. One file.
@@ -43,7 +43,7 @@ USER 1000:1000
 
 ENTRYPOINT ["/app"]
 
-LABEL rung="L0.0" \
-      name="ubi9-from-scratch-l0.0-describe" \
-      summary="Static C++ on scratch that describes its own runtime" \
+LABEL rung="L0.2" \
+      name="ubi9-from-scratch-l0.2-authority" \
+      summary="Static C++ on scratch measuring the authority the kernel grants it" \
       description="One file. No libc, no shell, no package manager."

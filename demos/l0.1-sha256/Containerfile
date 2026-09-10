@@ -35,6 +35,12 @@ RUN mkdir -p /out \
 FROM scratch
 COPY --from=build /out/app /app
 
+# Run as a non-root uid. There is no /etc/passwd in this image, so the uid has
+# no name behind it — which is fine, and is what "numeric uid" means in
+# practice. Declaring it means the container does not default to uid 0 even
+# when the runtime would allow it.
+USER 1000:1000
+
 ENTRYPOINT ["/app"]
 
 LABEL rung="L0.1" \
