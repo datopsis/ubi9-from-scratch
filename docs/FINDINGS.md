@@ -129,13 +129,27 @@ leaving only `locale.alias`) and `/usr/share/zoneinfo` (1,505,172 B, 1,864
 files, removed entirely). Reproducer: the breakdown in `scripts/attribute.py`
 output combined with the `%doc` flag.
 
+**F16 — The reconstruction matches to 0.09%.** Building the recovered
+transaction over `scratch` produces 23,613,441 B against the official
+23,591,424 B, a delta of 22,017 B. Single layer, no package manager, no setuid
+or setgid entries. Reproducer: `.github/workflows/ci.yml`, run 34439224680.
+
+**F17 — The public mirrors carry the same RPM builds.** The reconstruction
+resolved to the identical NEVRAs recorded in the official image's rpmdb,
+including `glibc-2.34-275.el9_8` and `tzdata-2026c-1.el9_8`, despite drawing
+from `cdn-ubi.redhat.com` rather than the internal content set named in
+F10. This was previously an assumption and is now observed.
+
 ## Inferred
 
 **I1 — Superseded by F12, and now observed rather than inferred.** The root
 filesystem came from `install --installroot /mnt/rootfs`, recorded
 verbatim in the image. No inference is required.
 
-**I3 — Locale removal is the RPM install-language filter, not a deletion.**
+**I3 — Confirmed by F16. Locale removal is the RPM install-language filter,
+not a deletion.** The reconstruction names `glibc-minimal-langpack` and
+performs no locale deletion, yet lands within 22,017 B; had the catalogues
+been installed it would be ~4.7 MB heavier.
 Every `.mo` catalogue is absent while `locale.alias` remains, and
 `/usr/lib/locale` holds only `C.utf8` — the signature of RPM's
 `%_install_langs` restriction combined with the explicitly named

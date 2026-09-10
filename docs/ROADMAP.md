@@ -36,16 +36,18 @@ Established the 8,498,676 bytes Red Hat trims after installing.
 
 Accounts, release files, licences, content manifests, repository definitions.
 
-### WP6 — Reconstruction
+### WP6 — Reconstruction — done
 
 Build the image from an `--installroot` package transaction over `scratch`,
 reproducing the trims recorded in WP4. Needs a Linux container runtime.
 
-Unblocked. F12 recovered both build command lines verbatim and F13 identified
-the three named packages, so the transaction to reproduce is known exactly
-rather than reconstructed. The remaining unknown is the post-install cleanup
-in I4, which must be reproduced by inspection of what is absent rather than
-from a recorded command.
+Built and verified in CI: 23,613,441 B against the official 23,591,424 B, a
+delta of 22,017 B (0.09%), single layer, no package manager, no setuid or
+setgid entries. See `reconstruction/README.md`.
+
+The remaining unknown is the post-install cleanup in I4, which was reproduced
+from what is absent rather than from a recorded command. WP7 locates any
+residue by diffing inventories rather than totals.
 
 ### WP7 — Comparison
 

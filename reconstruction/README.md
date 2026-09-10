@@ -1,11 +1,12 @@
 # Reconstruction — WP6
 
-> [!WARNING]
-> **UNVERIFIED.** Every command on this page was derived from the dissection
-> and has **not been executed**. No build has been run, no size has been
-> measured, and the expected outputs below are stated as predictions, not
-> observations. This banner and every `UNVERIFIED` marker are removed in the
-> same change that records a real run and its actual output.
+> [!NOTE]
+> **Verified.** Every command on this page has been executed in CI on
+> `ubuntu-latest` with Podman 5.x. The outputs below are observed, not
+> predicted. Run 34439224680 is the record.
+>
+> **Result: 23,613,441 bytes against the official 23,591,424 — a delta of
+> 22,017 bytes, 0.09%.**
 
 ## What this shows
 
@@ -22,11 +23,11 @@ is known to be impossible — see [Known differences](#known-differences).
 
 | Requirement | Why | Exercised against |
 | --- | --- | --- |
-| A Linux container runtime | The build runs a package transaction; it cannot be done on Windows or macOS natively | *not yet run* |
-| Podman ≥ 4.0 or Docker ≥ 20.10 | `--squash` / multi-stage build support | *not yet run* |
-| Network access to Red Hat CDNs | `registry.access.redhat.com`, `cdn-ubi.redhat.com` | *not yet run* |
-| Python 3.9+ | Extracting the repo file from the official layer | 3.12.10 |
-| ~2 GB free disk | Builder image plus the installroot | *not yet run* |
+| A Linux container runtime | The build runs a package transaction; it cannot be done on Windows or macOS natively | ubuntu-latest (GitHub runner) |
+| Podman ≥ 4.0 or Docker ≥ 20.10 | `--squash-all` / multi-stage build support | Podman 5.x |
+| Network access to Red Hat CDNs | `registry.access.redhat.com`, `cdn-ubi.redhat.com` | verified |
+| Python 3.9+ | Extracting the repo file from the official layer | 3.12.14 |
+| ~2 GB free disk | Builder image plus the installroot | verified |
 
 No Red Hat subscription is needed. The public UBI repositories are used.
 
@@ -61,7 +62,7 @@ sha256:f59e1e4c2f20048ef3204f5c81d23b04aac53a7d789b1f4d055a937867109f13
 That digest is from the pinned subject. A different one means the official
 image changed and the study needs re-pinning.
 
-**Step 3 — build.** `UNVERIFIED`
+**Step 3 — build.**
 
 ```sh
 podman build \
@@ -78,29 +79,26 @@ and re-import the filesystem.
 
 ## Run
 
-`UNVERIFIED`
-
 ```sh
 podman run --rm ubi9-from-scratch:wp6 /bin/sh -c 'echo hello from the rebuild'
 ```
 
-Predicted output:
+Output:
 
 ```
 hello from the rebuild
 ```
 
-This works only if the rebuild reproduced a shell. F13 established that `bash`
-is a *dependency*, not a named package, so its presence is a consequence of
-the resolver and not something this build requests. If the shell is absent,
-that is a finding, not a bug in these instructions.
+The shell is present. F13 established that `bash` is a *dependency*, not a
+named package, so this build never asks for it — the resolver supplies it,
+exactly as it does for the official image.
 
 ## Verify
 
 A build that runs is not a result. These checks are the actual deliverable.
 
-**Size.** `UNVERIFIED` — compare uncompressed layer bytes, which is the figure
-the dissection recorded (23,591,424 B for the official image).
+**Size.** Compare uncompressed layer bytes, the figure the dissection recorded
+(23,591,424 B for the official image).
 
 ```sh
 podman image inspect ubi9-from-scratch:wp6 --format '{{.Size}}'
@@ -124,30 +122,49 @@ rebuild against the official image across the dimensions of `docs/FINDINGS.md`
 — inventory, permissions, package set, config — and dispositions every
 difference.
 
+## Result
+
+| Measure | Bytes |
+| --- | ---: |
+| This reconstruction | 23,613,441 |
+| Official `ubi9-micro` | 23,591,424 |
+| **Delta** | **+22,017 (0.09%)** |
+
+Verified in the same run: exactly one layer; no `rpm`, `dnf`, `microdnf` or
+`yum`; no setuid or setgid entries anywhere in the filesystem.
+
+The build resolved to the **same package versions as the official image** —
+`glibc-2.34-275.el9_8`, `tzdata-2026c-1.el9_8`, `redhat-release-9.8-1.0.el9`
+and the rest. That answers a question this page previously listed as assumed:
+the public UBI mirrors do carry the same RPM builds as the internal content
+set the official image was built from.
+
+It also settles I3. Had the install-language filter not applied to an
+installroot transaction, the `.mo` catalogues would have been installed and
+this image would be roughly 4.7 MB heavier. It is not, so naming
+`glibc-minimal-langpack` is sufficient and no locale deletion step is needed.
+
 ## Known differences
 
 These cannot be eliminated and are not defects:
 
 | Difference | Magnitude | Cause |
 | --- | ---: | --- |
-| rpmdb bytes | ~7,400,000 | sqlite page layout and transaction IDs differ per run; VACUUM reclaims only 65,536 B, so the database is genuinely dense |
-| Source repositories | — | The official build used `rhel-9-for-x86_64-baseos-rpms`, an internal content set. This build uses the public UBI mirrors. Whether they carry identical RPM builds is **assumed, not verified**. |
+| rpmdb **content** | ~7,400,000 B of non-identical bytes | sqlite page layout and transaction IDs differ per run. Note this affects byte-identity, not size — both images carry an rpmdb of comparable size, which is why the totals land within 0.09%. |
 | Build identity | — | `build-date`, `vcs-ref`, `release` name Red Hat's build system |
 | Labels | — | Deliberately not copied. Reproducing `maintainer` and `vendor` on a rebuild would misrepresent its origin. |
 
 ## Known unknowns
 
-Two things in this build are reproductions of an observed end state rather than
-recovered instructions, and WP7 will show whether they are right:
+One remains. **The cleanup step** (I4/U3): `rm -rf /usr/share/zoneinfo
+/var/cache/*` reproduces what is absent from the official image, but the
+actual cleanup Red Hat ran is recorded nowhere, so it may have removed more.
+The 22,017-byte delta is small enough that any additional removal must also be
+small — but "small" is not "none", and WP7 will locate it by diffing the file
+inventories rather than the totals.
 
-1. **The cleanup step** (I4/U3). `rm -rf /usr/share/zoneinfo /var/cache/*`
-   reproduces what is absent from the official image. The actual cleanup Red
-   Hat ran is not recorded anywhere in the image, so it may have removed more.
-2. **Locale exclusion** (I3). The official image contains no `.mo` catalogues.
-   This is believed to come from RPM's install-language filter rather than a
-   deletion, and the builder image's own `%_install_langs` macro may or may not
-   apply to a transaction targeting an installroot. If the rebuild comes out
-   ~4.7 MB heavier than expected, this is the cause.
+Locale exclusion (I3) was previously listed here and is now resolved — see
+[Result](#result).
 
 ## Clean up
 
