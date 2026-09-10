@@ -81,7 +81,7 @@ jobs:
             containerfile: demos/l0-static/Containerfile
             context: demos/l0-static
             needs_official_layer: false
-            smoke: ''
+            smoke: '--report'
             expect_entries: 1
     steps:
       - uses: actions/checkout@v4
@@ -121,6 +121,19 @@ jobs:
       - name: Smoke test
         run: |
           podman run --rm ${{ matrix.variant }}:${{ matrix.releasever }} ${{ matrix.smoke }}
+
+      # Functional verification. Each demo owns its own verify.sh, so proving a
+      # container does its job scales with the ladder instead of accumulating
+      # per-variant steps here. A demo without one is only smoke-tested.
+      - name: Functional test
+        run: |
+          script="${{ matrix.context }}/verify.sh"
+          if [ -f "$script" ]; then
+            chmod +x "$script"
+            "$script" ${{ matrix.variant }}:${{ matrix.releasever }}
+          else
+            echo "no verify.sh in ${{ matrix.context }} — smoke test only"
+          fi
 
       # Filesystem inspection rather than in-container commands, so this works
       # for images with no shell.
