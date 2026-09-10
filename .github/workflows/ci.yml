@@ -21,6 +21,14 @@ jobs:
   analysis:
     name: Dissect the official image
     runs-on: ubuntu-latest
+
+          # L1 — leaving scratch: dynamic linkage against a real base.
+          - variant: l1-dynamic
+            releasever: '9.8'
+            containerfile: demos/l1-dynamic/Containerfile
+            context: demos/l1-dynamic
+            needs_official_layer: false
+            smoke: '--report'
     steps:
       - uses: actions/checkout@v4
 

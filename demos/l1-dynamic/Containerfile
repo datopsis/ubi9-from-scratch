@@ -1,0 +1,57 @@
+# L1 — leaving scratch: the same program, linked dynamically.
+#
+# L0 carried its own copy of glibc inside the binary. This rung links against
+# the C library on the base image instead, which is how essentially all
+# software is normally built and shipped.
+#
+# The point of the rung is to measure what that costs, and the answer is
+# uncomfortable: the binary shrinks and the image grows by more than twenty
+# megabytes, because you now have to carry the base.
+
+ARG BUILDER=registry.access.redhat.com/ubi9/ubi:9.8
+
+# The base is pinned by digest, not tag — the same subject the dissection
+# studied. A tag is a mutable pointer; a digest is the content. See
+# demos/l0.0-anatomy/README.md for why that distinction matters.
+ARG BASE=registry.access.redhat.com/ubi9/ubi-micro@sha256:f332c99eb8f798a8486821c91937f10ad64ee83d7e739303be2df051040918f6
+
+FROM ${BUILDER} AS build
+
+RUN dnf install -y --nodocs --setopt install_weak_deps=false gcc-c++ \
+    && dnf clean all
+
+COPY src/main.cpp /src/main.cpp
+
+# -static-libstdc++ -static-libgcc is the interesting part.
+#
+# ubi9-micro ships glibc but NOT libstdc++: the dissection found 20 packages
+# and libstdc++ is not among them. A plain dynamic C++ build would therefore
+# compile fine and then fail at startup with "error while loading shared
+# libraries: libstdc++.so.6".
+#
+# Linking the C++ runtime statically while leaving glibc dynamic resolves that
+# without adding a package to the base. It is a genuinely useful technique for
+# targeting minimal images, and it is why this rung runs on stock ubi9-micro
+# rather than needing a custom base.
+RUN mkdir -p /out \
+    && g++ -O2 -s -static-libstdc++ -static-libgcc -o /out/app /src/main.cpp \
+    && echo "--- linkage ---" \
+    && ldd /out/app \
+    && echo "--- size ---" \
+    && stat -c '%s bytes' /out/app
+
+FROM ${BASE}
+COPY --from=build /out/app /app
+
+# Unlike L0, this base has a real /etc/passwd, so a named account is possible.
+# The uid is still declared numerically because the account does not exist —
+# creating one would mean adding a package or editing /etc/passwd, and the
+# point of the rung is to change one thing at a time.
+USER 1000:1000
+
+ENTRYPOINT ["/app"]
+
+LABEL rung="L1" \
+      name="ubi9-from-scratch-l1-dynamic" \
+      summary="Dynamically linked C++ on ubi9-micro" \
+      description="The same SHA-256 program as L0.2, linked against the base image's glibc."

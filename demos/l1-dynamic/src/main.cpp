@@ -1,4 +1,4 @@
-// L0.2 — a statically linked C++ program that does real work.
+// L1 — the same program, linked dynamically against a real base image.
 //
 // The program does real work: it computes the SHA-256 of standard input and
 // prints the digest. That function is deliberate. Every rung of the ladder
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
     }
 
     // --report: describe the runtime instead, for the demo's own claims.
-    std::printf("L0.2 — static C++ on scratch\n");
+    std::printf("L1 — dynamic C++ on ubi9-micro\n");
     std::printf("--------------------------\n");
     std::printf("function             : SHA-256 of stdin (self-contained)\n");
     std::printf("NIST self-test       : passed (3 vectors)\n");
@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
         std::printf("shared libraries     : %d — NOT a static build\n", mapped);
     }
 
-    std::printf("\nThis image contains one file: the binary you are reading this from.\n");
+    std::printf("\nThis image is a base image plus one binary — see what that cost.\n");
 
     if (!exceptions_ok) {
         return 1;
