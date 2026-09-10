@@ -13,10 +13,28 @@ does not fully explain: what is actually inside UBI Micro, how did it get
 there, and what does a from-scratch reconstruction have to do to match it.
 
 > [!IMPORTANT]
-> This repository is at the investigation stage. No reconstruction has been
-> published yet, and no claim of equivalence with the official image has been
-> tested. Findings will be recorded here only after they are reproduced from
-> the commands in `docs/`.
+> This repository is at the investigation stage. The dissection through package
+> attribution is complete and reproducible; no reconstruction has been built
+> yet, and no claim of equivalence with the official image has been tested.
+
+Start with **[the journey](docs/JOURNEY.md)** for the narrative walkthrough, or
+**[findings](docs/FINDINGS.md)** for the evidence-backed results.
+
+## What the dissection found so far
+
+The subject is pinned at `sha256:f332c99e…` (RHEL 9.8, built 2026-08-26):
+**23,591,424 bytes uncompressed** from a 7,253,582-byte download, in a single
+squashed layer of 877 entries.
+
+Its Containerfile contains no `RUN` instruction at all — the entire root
+filesystem arrives as a pre-built directory, so the build that matters happens
+somewhere the image does not describe. The image ships **no setuid, setgid or
+file-capability entries**, and it does ship a shell: `Cmd` resolves through
+`/bin/sh` to a real `bash` binary, so the common "UBI Micro has no shell" claim
+is wrong — it is the package manager that is absent.
+
+It also ships its own rpm database, 31.4% of the uncompressed image, which
+names the twenty packages the reconstruction has to install.
 
 ## Why UBI Micro is interesting
 
@@ -72,6 +90,7 @@ pinned in `docs/METHOD.md` as the commands land.
 
 | Path | Contents |
 | --- | --- |
+| `docs/JOURNEY.md` | Narrative walkthrough: official image to rebuild. |
 | `docs/METHOD.md` | How the dissection is performed, command by command. |
 | `docs/FINDINGS.md` | What the dissection showed, with evidence. |
 | `docs/RECONSTRUCTION.md` | How the from-scratch build is assembled. |
