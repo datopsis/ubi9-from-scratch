@@ -70,7 +70,7 @@ echo
 echo "=== SBOM: $IMAGE ==="
 # SPDX is the format most compliance processes ask for; CycloneDX is what many
 # scanners consume. Producing both costs one extra second.
-syft "podman:$IMAGE" -o spdx-json="$OUTDIR/${SAFE_NAME}.spdx.json" \
+syft "oci-archive:$ARCHIVE" -o spdx-json="$OUTDIR/${SAFE_NAME}.spdx.json" \
                      -o cyclonedx-json="$OUTDIR/${SAFE_NAME}.cdx.json" \
                      -o table
 
