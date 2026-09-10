@@ -17,7 +17,11 @@ ARG BASE=registry.access.redhat.com/ubi9/ubi-micro@sha256:f332c99eb8f798a8486821
 
 FROM ${BUILDER} AS build
 
-RUN dnf install -y --nodocs --setopt install_weak_deps=false gcc-c++ \
+# libstdc++-static provides libstdc++.a, which -static-libstdc++ needs.
+# libstdc++-devel alone is not enough: it ships the shared library and the
+# headers, not the archive.
+RUN dnf install -y --nodocs --setopt install_weak_deps=false \
+      gcc-c++ libstdc++-static \
     && dnf clean all
 
 COPY src/main.cpp /src/main.cpp
