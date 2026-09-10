@@ -1,4 +1,4 @@
-# L0 — the floor of the WP9 ladder.
+# L0.0 — the floor of the ladder, part one: describe the environment.
 #
 # A statically linked C++ binary in an image that contains nothing else. No
 # libc, no shell, no package manager, no /etc. One file.
@@ -37,7 +37,7 @@ COPY --from=build /out/app /app
 
 ENTRYPOINT ["/app"]
 
-LABEL rung="L0" \
-      name="ubi9-from-scratch-l0-static" \
-      summary="Statically linked C++ on scratch — the size floor" \
+LABEL rung="L0.0" \
+      name="ubi9-from-scratch-l0.0-describe" \
+      summary="Static C++ on scratch that describes its own runtime" \
       description="One file. No libc, no shell, no package manager."

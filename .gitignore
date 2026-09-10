@@ -26,6 +26,7 @@ rootfs/
 manifests/
 
 # Local security and qualification evidence
+security-results/
 *.sarif
 *.spdx.json
 grype*.json

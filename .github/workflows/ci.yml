@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -56,10 +57,10 @@ jobs:
             work/closure-bash.json
           retention-days: 14
 
-  # Every example container builds here. Adding a rung to the WP9 ladder means
-  # adding one entry to this matrix and nothing else.
+  # Every example container builds, runs, is verified and is scanned here.
+  # Adding a rung to the ladder means adding one entry to this matrix.
   build:
-    name: ${{ matrix.variant }} (RHEL ${{ matrix.releasever }})
+    name: ${{ matrix.variant }}
     needs: analysis
     runs-on: ubuntu-latest
     strategy:
@@ -75,11 +76,20 @@ jobs:
             smoke: /bin/sh -c "echo hello from the rebuild"
             compare_to_official: true
 
-          # L0 — the floor: one statically linked binary, nothing else.
-          - variant: l0-static
+          # L0.0 — the floor, part one: describe the environment.
+          - variant: l0.0-describe
             releasever: '9.8'
-            containerfile: demos/l0-static/Containerfile
-            context: demos/l0-static
+            containerfile: demos/l0.0-describe/Containerfile
+            context: demos/l0.0-describe
+            needs_official_layer: false
+            smoke: ''
+            expect_entries: 1
+
+          # L0.1 — the floor, part two: do real work.
+          - variant: l0.1-sha256
+            releasever: '9.8'
+            containerfile: demos/l0.1-sha256/Containerfile
+            context: demos/l0.1-sha256
             needs_official_layer: false
             smoke: '--report'
             expect_entries: 1
@@ -122,9 +132,9 @@ jobs:
         run: |
           podman run --rm ${{ matrix.variant }}:${{ matrix.releasever }} ${{ matrix.smoke }}
 
-      # Functional verification. Each demo owns its own verify.sh, so proving a
+      # Functional verification. Each demo owns its verify.sh, so proving a
       # container does its job scales with the ladder instead of accumulating
-      # per-variant steps here. A demo without one is only smoke-tested.
+      # per-variant steps here.
       - name: Functional test
         run: |
           script="${{ matrix.context }}/verify.sh"
@@ -157,11 +167,25 @@ jobs:
           python scripts/inventory.py
           python scripts/compare.py rootfs.tar --json compare-${{ matrix.variant }}.json
 
+      # Security evidence, produced by the same script a reader runs on their
+      # own workstation, so the tutorial and the pipeline cannot drift apart.
+      - name: Install syft and grype
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sSfL https://get.anchore.io/syft  | sh -s -- -b "$HOME/.local/bin"
+          curl -sSfL https://get.anchore.io/grype | sh -s -- -b "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: SBOM and vulnerability scan
+        run: |
+          chmod +x scripts/security_scan.sh
+          scripts/security_scan.sh ${{ matrix.variant }}:${{ matrix.releasever }} security-results
+
       - name: Report size
         run: |
           size=$(podman image inspect ${{ matrix.variant }}:${{ matrix.releasever }} --format '{{.Size}}')
           {
-            echo "## ${{ matrix.variant }} @ RHEL ${{ matrix.releasever }}"
+            echo "## ${{ matrix.variant }}"
             echo ""
             echo "| Measure | Bytes |"
             echo "| --- | ---: |"
@@ -183,12 +207,13 @@ jobs:
             echo "size=$size ($(( size * 100 / official ))% of official ubi9-micro)"
           fi
 
-      - name: Upload verification
+      - name: Upload verification and security evidence
         uses: actions/upload-artifact@v4
         with:
-          name: verify-${{ matrix.variant }}-${{ matrix.releasever }}
+          name: evidence-${{ matrix.variant }}
           path: |
             verify-${{ matrix.variant }}.json
             compare-${{ matrix.variant }}.json
+            security-results/
           if-no-files-found: warn
           retention-days: 14

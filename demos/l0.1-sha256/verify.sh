@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Functional verification for L0.
+# Functional verification for L0.1.
 #
 # Proves the container does its job, not merely that it starts. Every rung of
 # the ladder computes the same SHA-256 digests, so this script is the shared
 # contract: an image that passes it produces correct output regardless of how
 # it computes it.
 #
-# Usage: demos/l0-static/verify.sh <image>
+# Usage: demos/l0.1-sha256/verify.sh <image>
 
 set -euo pipefail
 

@@ -1,4 +1,4 @@
-// L0 — the floor: a statically linked C++ program in an image with nothing else.
+// L0.1 — a statically linked C++ program that does real work.
 //
 // The program does real work: it computes the SHA-256 of standard input and
 // prints the digest. That function is deliberate. Every rung of the ladder
