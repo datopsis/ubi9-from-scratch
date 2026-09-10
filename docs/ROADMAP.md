@@ -10,7 +10,7 @@ built. Each release is a self-contained tutorial that stands on its own.
 | — | Phase 1: dissect and reproduce `ubi9-micro` | **done** |
 | v0.1.0 | L0.1 describe · L0.2 SHA-256 · L0.3 authority | **done** |
 | v0.2.0 | L0.0 anatomy · L1 dynamic linkage | **this release** |
-| v0.3.0 | **Part 0 — the toolkit**: dev environment, podman, skopeo, buildah, umoci, syft, grype | next |
+| v0.3.0 | **Part 0 — the toolkit**: dev environment, podman, skopeo, buildah, umoci, syft, grype | **this release** |
 | — | **Part M — the method**: M1 baseline (v0.4.0), M2 advanced (v0.6.0), M3 disadvantages and sidecars (v0.11.0), consolidated at v1.0.0 | interleaved |
 | v0.4.0 | L2 OpenSSL TLS | planned |
 | v0.5.0 | L3 FIPS-mode crypto | planned |
@@ -60,7 +60,7 @@ The reconstruction reproduces the official image with zero unexplained
 differences — see `docs/COMPARISON.md`. WP8, the consolidated write-up, lands
 with v1.0.0.
 
-## Part 0 — The toolkit (v0.3.0)
+## Part 0 — The toolkit (v0.3.0) — done
 
 Every tutorial so far assumes the reader already has Podman and knows what it
 is doing. That assumption should be paid for, not made. This part is a short

@@ -11,9 +11,48 @@ rather than predicted.
 
 ## [Unreleased]
 
-Next: **v0.3.0 — Part 0, the toolkit.** Tutorials introducing podman, skopeo,
-buildah, umoci, syft and grype on their own terms, with WSL2 Ubuntu and RHEL
-setup instructions side by side. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Next: **v0.4.0 — L2 (OpenSSL TLS)** and **M1**, the tutorial on how containers
+are normally built, measured so every later number has a baseline. See
+[docs/ROADMAP.md](docs/ROADMAP.md).
+
+## [0.3.0] — 2026-09-10
+
+**Part 0 — the toolkit.** Seven tutorials introducing every tool the series
+uses, so the earlier assumption that a reader already had Podman and knew what
+it was doing is now paid for rather than made.
+
+### Added
+
+- **[T1 — Your development environment](tools/t1-dev-environment/README.md)** —
+  clean machine to working setup. Covers the `subuid`/`subgid` allocation that
+  is what usually breaks a rootless install, and the two things that bite on
+  WSL2 specifically.
+- **[T2 — Podman](tools/t2-podman/README.md)** — daemonless and rootless
+  explained, and what every flag in this project's `podman run` lines is for.
+- **[T3 — Skopeo](tools/t3-skopeo/README.md)** — asking a registry a question
+  without pulling anything, and resolving a tag to a digest. Independently
+  confirms the digest Phase 1 pinned.
+- **[T4 — Buildah](tools/t4-buildah/README.md)** — building an image with no
+  Containerfile. **Explains what `unshare` and `mount` mean** rather than
+  assuming them, shows `mount` returning nothing outside a user namespace, and
+  builds a 30 KB image from `scratch` using only host tools.
+- **[T5 — Umoci](tools/t5-umoci/README.md)** — opening an OCI layout, the
+  runtime bundle it produces, and the `--layout` versus `--image` flag trap.
+- **[T6 — Syft](tools/t6-syft/README.md)** — what an SBOM is, where the answer
+  comes from, and why a `scratch` image yields `No packages discovered`.
+- **[T7 — Grype](tools/t7-grype/README.md)** — reading a scan honestly:
+  severity is not risk, row counts overstate, and two scanners will disagree.
+- CI verifies every install command. The `apt` commands run on the runner; the
+  `dnf` commands run inside a `ubi9` container, so neither set is transcribed
+  from documentation.
+- `scripts/toolkit_demo.sh` — exercises every tool against a real image on
+  every push, so the tutorials cannot drift from what the tools actually do.
+
+### Corrected
+
+- An earlier claim implied buildah was uniquely able to mount a container's
+  filesystem. `podman unshare` and `podman mount` do the same job; the
+  difference is ergonomics, not capability, and T4 says so with a comparison.
 
 ## [0.2.0] — 2026-09-10
 
@@ -157,6 +196,7 @@ exactly, and opens the tutorial ladder with three lessons at its floor.
 - **Zero vulnerabilities is not a clean bill of health.** An image with no
   package database gives a package-based scanner nothing to read.
 
-[Unreleased]: https://github.com/datopsis/ubi9-from-scratch/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/datopsis/ubi9-from-scratch/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.3.0
 [0.2.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.2.0
 [0.1.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.1.0

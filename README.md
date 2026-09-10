@@ -33,8 +33,10 @@ content it lacks is the 3,346 bytes of Red Hat build metadata it deliberately
 does not copy. `docs/COMPONENTS.md` explains what every byte of the official
 image is for.
 
-**New here? Start with [the tutorial ladder](demos/README.md)** — three
-lessons that build, run and inspect a real container from an empty image.
+**New here?** Start with **[the toolkit](tools/README.md)** if you need to set
+up a machine — seven short tutorials covering podman, skopeo, buildah, umoci,
+syft and grype, with WSL2 Ubuntu and Red Hat commands side by side. If you
+already run containers, go straight to **[the ladder](demos/README.md)**.
 
 For the investigation itself: **[the journey](docs/JOURNEY.md)** is the
 narrative, **[findings](docs/FINDINGS.md)** are the evidence-backed results,
@@ -112,7 +114,8 @@ pinned in `docs/METHOD.md` as the commands land.
 | Path | Contents |
 | --- | --- |
 | `CHANGELOG.md` | What changed in each release. |
-| `demos/` | **The tutorial ladder — start here.** |
+| `tools/` | **Part 0 — the toolkit.** Set up a machine and learn the tools. |
+| `demos/` | **The tutorial ladder.** Build containers and measure each step. |
 | `docs/JOURNEY.md` | Narrative walkthrough: official image to rebuild. |
 | `docs/COMPONENTS.md` | Every package: what it is, why it's there, what it costs. |
 | `reconstruction/` | WP6: rebuilding ubi9-micro, with build and run instructions. |
