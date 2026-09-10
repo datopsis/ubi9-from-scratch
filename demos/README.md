@@ -12,9 +12,9 @@ have done one you can navigate any of them.
 
 | Part | Tutorial | Question it answers |
 | --- | --- | --- |
-| L0.0 | [describe](l0.0-describe/README.md) | What does an image with nothing in it actually contain? |
-| L0.1 | [sha256](l0.1-sha256/README.md) | Can something that small do real work? |
-| L0.2 | [authority](l0.2-authority/README.md) | If it's just a binary, why containerise it at all? |
+| L0.0 | [describe](l0.1-describe/README.md) | What does an image with nothing in it actually contain? |
+| L0.1 | [sha256](l0.2-sha256/README.md) | Can something that small do real work? |
+| L0.2 | [authority](l0.3-authority/README.md) | If it's just a binary, why containerise it at all? |
 
 **L0.2 is the one to read if you are sceptical of the whole idea.** It measures
 what the kernel permits a process, contained versus not, and shows the same

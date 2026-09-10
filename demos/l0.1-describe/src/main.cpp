@@ -102,7 +102,7 @@ void report_filesystem() {
 int main(int argc, char** argv) {
     const bool wait = (argc > 1 && std::string(argv[1]) == "--wait");
 
-    std::printf("L0.0 — static C++ on scratch\n");
+    std::printf("L0.2 — static C++ on scratch\n");
     std::printf("----------------------------\n");
     std::printf("purpose              : describe the environment it runs in\n");
 

@@ -1,8 +1,8 @@
-# L0.2 — why bother with a container at all?
+# L0.3 — why bother with a container at all?
 
-**Part three of the L0 tutorial.** Part one is
-[L0.0](../l0.0-describe/README.md), part two is
-[L0.1](../l0.1-sha256/README.md).
+**Part four of the L0 tutorial.** It starts at
+[L0.0 — anatomy](../l0.0-anatomy/README.md); the previous rung is
+[L0.2](../l0.2-sha256/README.md).
 
 > [!NOTE]
 > **Verified in CI** on `ubuntu-latest` with Podman 5.x. Every command and
@@ -10,7 +10,7 @@
 
 ## What this shows
 
-By now there is a fair objection to the whole exercise. L0.1 is a single
+By now there is a fair objection to the whole exercise. L0.2 is a single
 931 KB static binary with no dependencies. You could `scp` it to a server and
 run it. **So what is the container actually for?**
 
@@ -54,9 +54,9 @@ ordinary actions and reports which the kernel permitted.
 ```sh
 podman build \
   --squash-all \
-  --file demos/l0.2-authority/Containerfile \
-  --tag l0.2-authority:9.8 \
-  demos/l0.2-authority
+  --file demos/l0.3-authority/Containerfile \
+  --tag l0.3-authority:9.8 \
+  demos/l0.3-authority
 ```
 
 ## Run
@@ -69,13 +69,13 @@ podman run --rm \
   --security-opt=no-new-privileges \
   --read-only \
   --network=none \
-  l0.2-authority:9.8
+  l0.3-authority:9.8
 ```
 
 Observed:
 
 ```
-L0.2 — what the kernel lets this process do
+L0.3 — what the kernel lets this process do
 -------------------------------------------
 uid 1000, gid 1000, pid 1 (as this process sees it)
 
@@ -121,7 +121,7 @@ knowing because they contradict the obvious assumption:
 
 None of this is a flaw. It is the difference between what an *image* contains
 and what a *container* has, and confusing the two is how people end up
-surprised in production. L0.0 reports these paths as absent because it is
+surprised in production. L0.1 reports these paths as absent because it is
 inspecting a different launch configuration; both reports are correct.
 
 If you want `/tmp` gone too: `--read-only-tmpfs=false`.
@@ -133,7 +133,7 @@ This is where the concept lands. Start a held container:
 ```sh
 podman run -d -i --name l02 \
   --cap-drop=ALL --security-opt=no-new-privileges --read-only --network=none \
-  l0.2-authority:9.8 --hold
+  l0.3-authority:9.8 --hold
 ```
 
 Ask it what pid it thinks it is, then ask the host:
@@ -220,24 +220,24 @@ podman rm -f l02
 ## Review the contents
 
 ```sh
-podman create --name check l0.2-authority:9.8
+podman create --name check l0.3-authority:9.8
 podman export check -o rootfs.tar
 podman rm check
 python scripts/verify_image.py rootfs.tar --expect-entries 1
 ```
 
-One file, no setuid, no setgid, no package managers — the same floor as L0.0
-and L0.1.
+One file, no setuid, no setgid, no package managers — the same floor as L0.1
+and L0.2.
 
 ## Security
 
 ```sh
-scripts/security_scan.sh l0.2-authority:9.8
+scripts/security_scan.sh l0.3-authority:9.8
 ```
 
 Zero components, zero vulnerabilities, and the same caveat as the other L0
 rungs: that is an absence of *visibility*, not an absence of risk. See
-[L0.1's security section](../l0.1-sha256/README.md#security) for the full
+[L0.2's security section](../l0.2-sha256/README.md#security) for the full
 explanation.
 
 There is a second lesson here specific to this rung. A scanner tells you what
@@ -250,9 +250,9 @@ halves need evidence, and only one of them shows up in a scan report.
 
 | Rung | Image bytes | Entries | Components | Vulns |
 | --- | ---: | ---: | ---: | ---: |
-| L0.0 describe | 934,974 | 1 | 0 | 0 |
-| L0.1 SHA-256 | 939,069 | 1 | 0 | 0 |
-| **L0.2 authority** | **~939,000** | **1** | **0** | **0** |
+| L0.1 describe | 934,974 | 1 | 0 | 0 |
+| L0.2 SHA-256 | 939,069 | 1 | 0 | 0 |
+| **L0.3 authority** | **~939,000** | **1** | **0** | **0** |
 | WP6 `micro` reconstruction | 23,585,791 | 871 | 22 | 23 |
 | Official `ubi9-micro` | 23,591,424 | 877 | — | — |
 
@@ -264,7 +264,7 @@ comparison honest.
 
 ```sh
 podman rm -f l02 2>/dev/null
-podman rmi l0.2-authority:9.8
+podman rmi l0.3-authority:9.8
 rm -f rootfs.tar
 rm -rf security-results
 ```

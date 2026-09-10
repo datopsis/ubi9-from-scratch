@@ -5,7 +5,7 @@
 # that its claims match what the image actually contains — not merely that the
 # process started.
 #
-# Usage: demos/l0.0-describe/verify.sh <image>
+# Usage: demos/l0.1-describe/verify.sh <image>
 
 set -euo pipefail
 

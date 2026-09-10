@@ -213,7 +213,7 @@ void report_capabilities() {
 int main(int argc, char** argv) {
     const bool hold = (argc > 1 && std::string(argv[1]) == "--hold");
 
-    std::printf("L0.2 — what the kernel lets this process do\n");
+    std::printf("L0.3 — what the kernel lets this process do\n");
     std::printf("-------------------------------------------\n");
     // The pid this process believes it has. Inside its own PID namespace it is
     // 1; the host sees an ordinary process with an ordinary pid. Both are true

@@ -76,29 +76,38 @@ jobs:
             smoke: /bin/sh -c "echo hello from the rebuild"
             compare_to_official: true
 
-          # L0.0 — the floor, part one: describe the environment.
-          - variant: l0.0-describe
+          # L0.0 — what an image actually is, taken apart by hand.
+          - variant: l0.0-anatomy
             releasever: '9.8'
-            containerfile: demos/l0.0-describe/Containerfile
-            context: demos/l0.0-describe
+            containerfile: demos/l0.0-anatomy/Containerfile
+            context: demos/l0.0-anatomy
             needs_official_layer: false
             smoke: ''
             expect_entries: 1
 
-          # L0.1 — the floor, part two: do real work.
-          - variant: l0.1-sha256
+          # L0.1 — describe the environment.
+          - variant: l0.1-describe
             releasever: '9.8'
-            containerfile: demos/l0.1-sha256/Containerfile
-            context: demos/l0.1-sha256
+            containerfile: demos/l0.1-describe/Containerfile
+            context: demos/l0.1-describe
+            needs_official_layer: false
+            smoke: ''
+            expect_entries: 1
+
+          # L0.2 — do real work.
+          - variant: l0.2-sha256
+            releasever: '9.8'
+            containerfile: demos/l0.2-sha256/Containerfile
+            context: demos/l0.2-sha256
             needs_official_layer: false
             smoke: '--report'
             expect_entries: 1
 
-          # L0.2 — the floor, part three: why a container at all.
-          - variant: l0.2-authority
+          # L0.3 — why a container at all.
+          - variant: l0.3-authority
             releasever: '9.8'
-            containerfile: demos/l0.2-authority/Containerfile
-            context: demos/l0.2-authority
+            containerfile: demos/l0.3-authority/Containerfile
+            context: demos/l0.3-authority
             needs_official_layer: false
             # The smoke test runs unconfined on purpose: the probes are meant
             # to succeed here, and verify.sh then shows them failing when the

@@ -1,7 +1,8 @@
-# L0.0 — a container that describes itself
+# L0.1 — a container that describes itself
 
-**Part one of the L0 tutorial.** Part two is
-[L0.1](../l0.1-sha256/README.md), which does real work.
+**Part two of the L0 tutorial.** Part one is
+[L0.0 — anatomy](../l0.0-anatomy/README.md); part three is
+[L0.2](../l0.2-sha256/README.md), which does real work.
 
 > [!NOTE]
 > **Verified in CI** on `ubuntu-latest` with Podman 5.x. Every command and
@@ -14,7 +15,7 @@ An image containing exactly one file. No shell, no C library on disk, no
 at `/app`.
 
 The program's job is to **describe the environment it is running in**. That is
-the whole point of part one: before doing anything useful with a minimal
+the whole point of this rung: before doing anything useful with a minimal
 container, you should be able to see what "minimal" actually means. A container
 that prints `hello` proves only that it started. This one proves what it
 started *inside*.
@@ -64,9 +65,9 @@ From the repository root:
 ```sh
 podman build \
   --squash-all \
-  --file demos/l0.0-describe/Containerfile \
-  --tag l0.0-describe:9.8 \
-  demos/l0.0-describe
+  --file demos/l0.1-describe/Containerfile \
+  --tag l0.1-describe:9.8 \
+  demos/l0.1-describe
 ```
 
 The build runs `ldd` on the result. A fully static binary reports
@@ -86,13 +87,13 @@ podman run --rm \
   --cap-drop=ALL \
   --security-opt=no-new-privileges \
   --read-only \
-  l0.0-describe:9.8
+  l0.1-describe:9.8
 ```
 
 Observed output:
 
 ```
-L0.0 — static C++ on scratch
+L0.3 — static C++ on scratch
 ----------------------------
 purpose              : describe the environment it runs in
 linked in statically : libstdc++, libgcc unwinder, glibc
@@ -138,7 +139,7 @@ Start it in a mode that stays alive:
 ```sh
 podman run -d -i --name l00 \
   --cap-drop=ALL --security-opt=no-new-privileges --read-only \
-  l0.0-describe:9.8 --wait
+  l0.1-describe:9.8 --wait
 ```
 
 Exec the binary that exists:
@@ -168,11 +169,11 @@ Both results are verified in CI. **There is no shell to exec**, so the usual
 a normal binary, you can alias the whole container and forget it is one:
 
 ```sh
-alias describe='podman run --rm --cap-drop=ALL --security-opt=no-new-privileges --read-only l0.0-describe:9.8'
+alias describe='podman run --rm --cap-drop=ALL --security-opt=no-new-privileges --read-only l0.1-describe:9.8'
 describe
 ```
 
-The alias is worth more at L0.1, where the container computes a digest —
+The alias is worth more at L0.2, where the container computes a digest —
 `sha256c < myfile` reads exactly like a native tool while the implementation
 stays isolated, pinned and disposable. This is how minimal containers become
 practical to *use* rather than only to deploy: the container is the unit of
@@ -201,7 +202,7 @@ so the health check needs no shell, no `curl`, and no extra bytes.
 For anything `exec` cannot reach, work on the filesystem from outside:
 
 ```sh
-podman create --name check l0.0-describe:9.8
+podman create --name check l0.1-describe:9.8
 podman export check -o rootfs.tar
 podman rm check
 tar -tvf rootfs.tar
@@ -241,7 +242,7 @@ all checks passed
 Image size, which is the number the ladder tracks:
 
 ```sh
-podman image inspect l0.0-describe:9.8 --format '{{.Size}}'
+podman image inspect l0.1-describe:9.8 --format '{{.Size}}'
 ```
 
 Observed: `934974`.
@@ -255,7 +256,7 @@ for a fully static binary.
 Run the same script CI runs:
 
 ```sh
-scripts/security_scan.sh l0.0-describe:9.8
+scripts/security_scan.sh l0.1-describe:9.8
 ```
 
 Observed:
@@ -273,7 +274,7 @@ vulnerabilities found : 0
 ### Do it by hand, so you understand the result
 
 ```sh
-podman save --format oci-archive -o image.tar l0.0-describe:9.8
+podman save --format oci-archive -o image.tar l0.1-describe:9.8
 syft oci-archive:image.tar -o table
 grype oci-archive:image.tar -o table
 ```
@@ -281,7 +282,7 @@ grype oci-archive:image.tar -o table
 Scanning an exported archive rather than asking the tools to talk to Podman
 avoids needing a socket, and works the same on any machine.
 
-**This is the most important lesson in part one.** The scan is empty because
+**This is the most important lesson here.** The scan is empty because
 there is nothing for a package-based scanner to read — no rpmdb, no manifest,
 no metadata. A vulnerable libc compiled into a static binary produces the
 identical clean report as a safe one.
@@ -290,7 +291,7 @@ Compare with the reconstructed `ubi9-micro` from the same script:
 
 | Image | Bytes | Components | Vulnerabilities |
 | --- | ---: | ---: | --- |
-| L0.0 | 934,974 | 0 | 0 — nothing is visible |
+| L0.1 | 934,974 | 0 | 0 — nothing is visible |
 | `micro` | 23,585,791 | 22 | 23 (17 Medium, 6 Low) — real, and actionable |
 
 The larger image looks worse and is more honest. 31.4% of `ubi9-micro` is its
@@ -306,8 +307,8 @@ relying on a scan.
 
 | Rung | Image bytes | Entries | Components | Vulns |
 | --- | ---: | ---: | ---: | ---: |
-| **L0.0 describe** | **934,974** | **1** | **0** | **0** |
-| L0.1 SHA-256 | 939,069 | 1 | 0 | 0 |
+| **L0.1 describe** | **934,974** | **1** | **0** | **0** |
+| L0.2 SHA-256 | 939,069 | 1 | 0 | 0 |
 | WP6 `micro` reconstruction | 23,585,791 | 871 | 22 | 23 |
 | Official `ubi9-micro` | 23,591,424 | 877 | — | — |
 
@@ -315,11 +316,11 @@ relying on a scan.
 
 ```sh
 podman rm -f l00 2>/dev/null
-podman rmi l0.0-describe:9.8
+podman rmi l0.1-describe:9.8
 rm -f rootfs.tar image.tar
 rm -rf security-results
 ```
 
 ---
 
-**Next:** [L0.1 — the same floor, doing real work](../l0.1-sha256/README.md).
+**Next:** [L0.2 — the same floor, doing real work](../l0.2-sha256/README.md).

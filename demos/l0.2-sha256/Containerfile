@@ -1,4 +1,4 @@
-# L0.2 — the floor of the ladder, part three: why a container at all.
+# L0.2 — the ladder floor, part three: do real work.
 #
 # A statically linked C++ binary in an image that contains nothing else. No
 # libc, no shell, no package manager, no /etc. One file.
@@ -44,6 +44,6 @@ USER 1000:1000
 ENTRYPOINT ["/app"]
 
 LABEL rung="L0.2" \
-      name="ubi9-from-scratch-l0.2-authority" \
-      summary="Static C++ on scratch measuring the authority the kernel grants it" \
+      name="ubi9-from-scratch-l0.2-sha256" \
+      summary="Static C++ on scratch computing SHA-256 of stdin" \
       description="One file. No libc, no shell, no package manager."

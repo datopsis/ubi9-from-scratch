@@ -6,7 +6,7 @@
 # contract: an image that passes it produces correct output regardless of how
 # it computes it.
 #
-# Usage: demos/l0.1-sha256/verify.sh <image>
+# Usage: demos/l0.2-sha256/verify.sh <image>
 
 set -euo pipefail
 

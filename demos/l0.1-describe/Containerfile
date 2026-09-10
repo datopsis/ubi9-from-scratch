@@ -1,0 +1,49 @@
+# L0.1 — the ladder floor, part two: describe the environment.
+#
+# A statically linked C++ binary in an image that contains nothing else. No
+# libc, no shell, no package manager, no /etc. One file.
+#
+# This establishes the lower bound the rest of the ladder is measured against.
+# Every rung above it adds a requirement and reports what that requirement
+# costs.
+
+ARG BUILDER=registry.access.redhat.com/ubi9/ubi:9.8
+
+FROM ${BUILDER} AS build
+
+# glibc-static and libstdc++-static live in CodeReady Builder, which the UBI
+# repo definition enables by default. Without them, -static silently falls back
+# to dynamic linking for the missing pieces.
+RUN dnf install -y --nodocs --setopt install_weak_deps=false \
+      gcc-c++ glibc-static libstdc++-static \
+    && dnf clean all
+
+COPY src/main.cpp /src/main.cpp
+
+# -static      : link everything, including libc and libstdc++
+# -O2          : optimise, since the size claim should be honest about it
+# -s           : strip symbols; they are debugging aids, not runtime needs
+# -no-pie      : a fully static binary cannot be position-independent
+RUN mkdir -p /out \
+    && g++ -static -no-pie -O2 -s -o /out/app /src/main.cpp \
+    && echo "--- linkage check ---" \
+    && (ldd /out/app || true) \
+    && echo "--- size ---" \
+    && stat -c '%s bytes' /out/app
+
+# Nothing from the builder survives except the binary itself.
+FROM scratch
+COPY --from=build /out/app /app
+
+# Run as a non-root uid. There is no /etc/passwd in this image, so the uid has
+# no name behind it — which is fine, and is what "numeric uid" means in
+# practice. Declaring it means the container does not default to uid 0 even
+# when the runtime would allow it.
+USER 1000:1000
+
+ENTRYPOINT ["/app"]
+
+LABEL rung="L0.1" \
+      name="ubi9-from-scratch-l0.1-describe" \
+      summary="Static C++ on scratch that describes its own runtime" \
+      description="One file. No libc, no shell, no package manager."

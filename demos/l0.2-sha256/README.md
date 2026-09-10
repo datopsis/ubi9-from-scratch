@@ -1,8 +1,8 @@
-# L0.1 — the same floor, doing real work
+# L0.2 — the same floor, doing real work
 
-**Part two of the L0 tutorial.** Part one is
-[L0.0](../l0.0-describe/README.md), part three is
-[L0.2](../l0.2-authority/README.md).
+**Part three of the L0 tutorial.** Part two is
+[L0.1](../l0.1-describe/README.md); part four is
+[L0.3](../l0.3-authority/README.md).
 
 > [!NOTE]
 > **Verified in CI** on `ubuntu-latest` with Podman 5.x. Every command and
@@ -12,7 +12,7 @@
 
 ## What this shows
 
-L0.0 proved what an empty image contains. This rung proves the same image can
+L0.1 proved what an empty image contains. This rung proves the same image can
 do something useful: **it computes the SHA-256 of standard input.**
 
 That function is chosen deliberately. Every rung of the ladder computes the
@@ -37,7 +37,7 @@ make that claim untestable.
   dependencies. For real work, use a reviewed library — which is what L2 and L3
   are about.
 - **FIPS is impossible at this rung**, for the reason in
-  [L0.0](../l0.0-describe/README.md#what-it-does-not-show).
+  [L0.1](../l0.1-describe/README.md#what-it-does-not-show).
 
 ## Prerequisites
 
@@ -58,9 +58,9 @@ curl -sSfL https://get.anchore.io/grype | sh -s -- -b /usr/local/bin
 ```sh
 podman build \
   --squash-all \
-  --file demos/l0.1-sha256/Containerfile \
-  --tag l0.1-sha256:9.8 \
-  demos/l0.1-sha256
+  --file demos/l0.2-sha256/Containerfile \
+  --tag l0.2-sha256:9.8 \
+  demos/l0.2-sha256
 ```
 
 ## Run
@@ -71,7 +71,7 @@ printf 'abc' | podman run --rm -i \
   --security-opt=no-new-privileges \
   --read-only \
   --network=none \
-  l0.1-sha256:9.8
+  l0.2-sha256:9.8
 ```
 
 Observed:
@@ -87,17 +87,17 @@ saying so at launch costs nothing.
 Hash a file:
 
 ```sh
-podman run --rm -i --cap-drop=ALL --network=none l0.1-sha256:9.8 < myfile
+podman run --rm -i --cap-drop=ALL --network=none l0.2-sha256:9.8 < myfile
 ```
 
 Ask it to describe itself instead:
 
 ```sh
-podman run --rm --cap-drop=ALL --network=none l0.1-sha256:9.8 --report
+podman run --rm --cap-drop=ALL --network=none l0.2-sha256:9.8 --report
 ```
 
 ```
-L0.1 — static C++ on scratch
+L0.3 — static C++ on scratch
 ----------------------------
 function             : SHA-256 of stdin (self-contained)
 NIST self-test       : passed (3 vectors)
@@ -113,7 +113,7 @@ fail, so it will never print a digest it cannot vouch for.
 
 ## Exec and inspect
 
-The mechanics are the same as [L0.0](../l0.0-describe/README.md#exec-and-inspect):
+The mechanics are the same as [L0.1](../l0.1-describe/README.md#exec-and-inspect):
 `podman exec` works only for binaries the image contains, and this image
 contains one. There is no shell.
 
@@ -125,7 +125,7 @@ Because the entrypoint is an ordinary binary reading stdin and writing stdout,
 the container composes with everything else in a shell pipeline:
 
 ```sh
-alias sha256c='podman run --rm -i --cap-drop=ALL --security-opt=no-new-privileges --read-only --network=none l0.1-sha256:9.8'
+alias sha256c='podman run --rm -i --cap-drop=ALL --security-opt=no-new-privileges --read-only --network=none l0.2-sha256:9.8'
 
 sha256c < myfile
 cat a b c | sha256c
@@ -155,7 +155,7 @@ No shell, no `curl`, nothing added to the image.
 ## Review the contents
 
 ```sh
-podman create --name check l0.1-sha256:9.8
+podman create --name check l0.2-sha256:9.8
 podman export check -o rootfs.tar
 podman rm check
 python scripts/verify_image.py rootfs.tar --expect-entries 1
@@ -174,16 +174,16 @@ all checks passed
 ```
 
 ```sh
-podman image inspect l0.1-sha256:9.8 --format '{{.Size}}'
+podman image inspect l0.2-sha256:9.8 --format '{{.Size}}'
 ```
 
 Observed: `939069`. The SHA-256 implementation accounts for 4,095 of those
-bytes — L0.0, which only describes itself, is 934,974.
+bytes — L0.1, which only describes itself, is 934,974.
 
 ### Verify the function, not just the container
 
 ```sh
-demos/l0.1-sha256/verify.sh l0.1-sha256:9.8
+demos/l0.2-sha256/verify.sh l0.2-sha256:9.8
 ```
 
 ```
@@ -206,7 +206,7 @@ implementation with matching wrong test vectors passes its own suite.
 ## Security
 
 ```sh
-scripts/security_scan.sh l0.1-sha256:9.8
+scripts/security_scan.sh l0.2-sha256:9.8
 ```
 
 ```
@@ -222,7 +222,7 @@ vulnerabilities found : 0
 ### Do it by hand
 
 ```sh
-podman save --format oci-archive -o image.tar l0.1-sha256:9.8
+podman save --format oci-archive -o image.tar l0.2-sha256:9.8
 syft oci-archive:image.tar -o table
 grype oci-archive:image.tar -o table
 ```
@@ -236,7 +236,7 @@ Compare against the reconstructed `ubi9-micro`, scanned by the same script:
 
 | Image | Bytes | Components | Vulnerabilities |
 | --- | ---: | ---: | --- |
-| L0.1 | 939,069 | 0 | 0 — *nothing is visible* |
+| L0.2 | 939,069 | 0 | 0 — *nothing is visible* |
 | `micro` | 23,585,791 | 22 | 23 (17 Medium, 6 Low) — real and actionable |
 
 **The larger image looks worse and is more honest.** 31.4% of `ubi9-micro` is
@@ -257,16 +257,16 @@ wins" is the wrong objective.
 
 | Rung | Image bytes | Entries | Components | Vulns |
 | --- | ---: | ---: | ---: | ---: |
-| L0.0 describe | 934,974 | 1 | 0 | 0 |
-| **L0.1 SHA-256** | **939,069** | **1** | **0** | **0** |
-| L0.2 authority | ~939,000 | 1 | 0 | 0 |
+| L0.1 describe | 934,974 | 1 | 0 | 0 |
+| **L0.2 SHA-256** | **939,069** | **1** | **0** | **0** |
+| L0.3 authority | ~939,000 | 1 | 0 | 0 |
 | WP6 `micro` reconstruction | 23,585,791 | 871 | 22 | 23 |
 | Official `ubi9-micro` | 23,591,424 | 877 | — | — |
 
 ## Clean up
 
 ```sh
-podman rmi l0.1-sha256:9.8
+podman rmi l0.2-sha256:9.8
 rm -f rootfs.tar image.tar
 rm -rf security-results
 unalias sha256c 2>/dev/null
@@ -274,4 +274,4 @@ unalias sha256c 2>/dev/null
 
 ---
 
-**Next:** [L0.2 — why use a container at all?](../l0.2-authority/README.md)
+**Next:** [L0.3 — why use a container at all?](../l0.3-authority/README.md)

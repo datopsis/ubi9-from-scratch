@@ -11,7 +11,7 @@
 # asserting something false. What is asserted is the confinement that actually
 # holds, and that relaxing a flag changes the result.
 #
-# Usage: demos/l0.2-authority/verify.sh <image>
+# Usage: demos/l0.3-authority/verify.sh <image>
 
 set -euo pipefail
 

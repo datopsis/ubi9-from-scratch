@@ -1,11 +1,11 @@
-# L0.0 — the floor of the ladder, part one: describe the environment.
+# L0.0 — the ladder floor, part one: what an image actually is.
 #
-# A statically linked C++ binary in an image that contains nothing else. No
-# libc, no shell, no package manager, no /etc. One file.
+# A statically linked C binary in an image that contains nothing else, built so
+# there is exactly one file to find when you take the archive apart by hand.
 #
-# This establishes the lower bound the rest of the ladder is measured against.
-# Every rung above it adds a requirement and reports what that requirement
-# costs.
+# The program is deliberately trivial. This rung is about the anatomy of an
+# image — the manifest, the config, the layer — and about the difference
+# between what an image contains and what a container has at runtime.
 
 ARG BUILDER=registry.access.redhat.com/ubi9/ubi:9.8
 
@@ -15,17 +15,17 @@ FROM ${BUILDER} AS build
 # repo definition enables by default. Without them, -static silently falls back
 # to dynamic linking for the missing pieces.
 RUN dnf install -y --nodocs --setopt install_weak_deps=false \
-      gcc-c++ glibc-static libstdc++-static \
+      gcc glibc-static \
     && dnf clean all
 
-COPY src/main.cpp /src/main.cpp
+COPY src/main.c /src/main.c
 
-# -static      : link everything, including libc and libstdc++
+# -static      : link everything, including libc
 # -O2          : optimise, since the size claim should be honest about it
 # -s           : strip symbols; they are debugging aids, not runtime needs
 # -no-pie      : a fully static binary cannot be position-independent
 RUN mkdir -p /out \
-    && g++ -static -no-pie -O2 -s -o /out/app /src/main.cpp \
+    && gcc -static -no-pie -O2 -s -o /out/app /src/main.c \
     && echo "--- linkage check ---" \
     && (ldd /out/app || true) \
     && echo "--- size ---" \
@@ -44,6 +44,6 @@ USER 1000:1000
 ENTRYPOINT ["/app"]
 
 LABEL rung="L0.0" \
-      name="ubi9-from-scratch-l0.0-describe" \
-      summary="Static C++ on scratch that describes its own runtime" \
+      name="ubi9-from-scratch-l0.0-anatomy" \
+      summary="A one-file image, for taking apart by hand" \
       description="One file. No libc, no shell, no package manager."
