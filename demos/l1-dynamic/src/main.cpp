@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
 
     // --report: describe the runtime instead, for the demo's own claims.
     std::printf("L1 — dynamic C++ on ubi9-micro\n");
-    std::printf("--------------------------\n");
+    std::printf("------------------------------\n");
     std::printf("function             : SHA-256 of stdin (self-contained)\n");
     std::printf("NIST self-test       : passed (3 vectors)\n");
     std::printf("sha256(\"abc\")        : %s\n", sha256_of("abc").c_str());
@@ -249,9 +249,9 @@ int main(int argc, char** argv) {
     if (!proc_available) {
         std::printf("shared libraries     : unknown (/proc not mounted)\n");
     } else if (mapped == 0) {
-        std::printf("shared libraries     : 0 — nothing loaded from the image\n");
+        std::printf("shared libraries     : 0 — UNEXPECTED for a dynamic build\n");
     } else {
-        std::printf("shared libraries     : %d — NOT a static build\n", mapped);
+        std::printf("shared libraries     : %d — loaded from the base image\n", mapped);
     }
 
     std::printf("\nThis image is a base image plus one binary — see what that cost.\n");

@@ -11,6 +11,7 @@ built. Each release is a self-contained tutorial that stands on its own.
 | v0.1.0 | L0.1 describe · L0.2 SHA-256 · L0.3 authority | **done** |
 | v0.2.0 | L0.0 anatomy · L1 dynamic linkage | **this release** |
 | v0.3.0 | **Part 0 — the toolkit**: dev environment, podman, skopeo, buildah, umoci, syft, grype | next |
+| — | **Part M — the method**: M1 baseline (v0.4.0), M2 advanced (v0.6.0), M3 disadvantages and sidecars (v0.11.0), consolidated at v1.0.0 | interleaved |
 | v0.4.0 | L2 OpenSSL TLS | planned |
 | v0.5.0 | L3 FIPS-mode crypto | planned |
 | v0.6.0 | L4 structured logging | planned |
@@ -175,6 +176,52 @@ Introduced where they earn their place rather than as a catalogue:
 Deliberately not planned: `docker`, beyond noting the compatibility differences
 where they matter. This project is Podman-first, and teaching both doubles the
 surface area without doubling what a reader learns.
+
+## Part M — The method, taught throughout and consolidated at the end
+
+`docs/METHODOLOGY.md` is the destination: a checklist and flow diagram a reader
+can follow to build any container from scratch, plus the honest account of what
+that costs. It is built up across the whole series rather than written once —
+every tutorial contributes the piece it demonstrated — and consolidated at
+v1.0.0.
+
+Three tutorials belong to this track specifically.
+
+### M1 — How containers are normally built (v0.4.0)
+
+The baseline everyone already knows: `FROM language:latest`, install packages,
+copy source, run. Build a real application that way and **measure it** — size,
+package count, CVE count, whether it has a shell, whether it runs as root.
+
+Not a straw man. This approach is the right answer for plenty of workloads, and
+the tutorial says so. It exists to give every later number something to be
+compared against.
+
+### M2 — How advanced users build them (v0.6.0)
+
+The same application, assembled: closure analysis with `ldd` and
+`scripts/closure.py`, layer inspection, multi-stage builds, a `scratch` or
+minimal base. Then the two images side by side.
+
+Covers **functional** differences — what breaks, and why the failure messages
+are misleading — and **cybersecurity** differences: attack surface, the
+capability boundary, and the scanner-visibility paradox where minimising the
+image makes the security report emptier and less useful at the same time.
+
+### M3 — The disadvantages, and sidecars that mitigate them (v0.11.0)
+
+The honest half. No shell to debug with, opaque to scanners, build-time
+dependencies invisible, confusing failures, harder incident response.
+
+Then the mitigations, demonstrated rather than described: a **debug sidecar**
+sharing the target's namespaces and bringing its own tools, so the runtime
+image stays minimal and debuggability is attached only when needed. Covers
+`SYS_PTRACE` and why it belongs on a short-lived sidecar and never on a runtime
+image, plus the Kubernetes equivalent (ephemeral containers / `kubectl debug`)
+and how to get a filesystem out of a running container for offline analysis.
+
+Also covers generating an SBOM from **build inputs** rather than from the
+image, which is the only honest way to describe a statically linked artefact.
 
 ## Phase 1.5 — Replicating the rest of the UBI family
 
