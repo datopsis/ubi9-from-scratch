@@ -1,6 +1,6 @@
 # UBI 9 Micro from scratch
 
-[![License](https://img.shields.io/github/license/datopsis/ubi9-from-scratch)](LICENSE)
+[![License](https://img.shields.io/github/license/container-internals/ubi9-from-scratch)](LICENSE)
 [![Base: Red Hat UBI 9](https://img.shields.io/badge/base-Red%20Hat%20UBI%209-EE0000?logo=redhat&logoColor=white)](https://developers.redhat.com/products/rhel/ubi)
 [![Subject: ubi9-micro](https://img.shields.io/badge/subject-ubi9--micro-EE0000?logo=redhat&logoColor=white)](docs/METHOD.md)
 [![Status: investigation](https://img.shields.io/badge/status-investigation-F2994A)](docs/ROADMAP.md)

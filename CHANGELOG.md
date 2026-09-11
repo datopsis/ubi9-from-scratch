@@ -196,7 +196,7 @@ exactly, and opens the tutorial ladder with three lessons at its floor.
 - **Zero vulnerabilities is not a clean bill of health.** An image with no
   package database gives a package-based scanner nothing to read.
 
-[Unreleased]: https://github.com/datopsis/ubi9-from-scratch/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.3.0
-[0.2.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.2.0
-[0.1.0]: https://github.com/datopsis/ubi9-from-scratch/releases/tag/v0.1.0
+[Unreleased]: https://github.com/container-internals/ubi9-from-scratch/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/container-internals/ubi9-from-scratch/releases/tag/v0.3.0
+[0.2.0]: https://github.com/container-internals/ubi9-from-scratch/releases/tag/v0.2.0
+[0.1.0]: https://github.com/container-internals/ubi9-from-scratch/releases/tag/v0.1.0
